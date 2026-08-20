@@ -72,7 +72,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
             isDark ? "text-[#3b82f6]" : "text-[#001255]"
           }`}
         >
-          INDEX CARD RECIPES (WITHOUT THE BACKSTORY)
+          FIND RECIPES (WITHOUT THE BACKSTORY)
         </h1>
         <p
           className={`text-xs font-mono tracking-widest mt-1 uppercase ${isDark ? "text-[#9ca3af]" : "text-[#5f5e5a]"}`}

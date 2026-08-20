@@ -42,7 +42,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         isDark
           ? "bg-[#050b14] border-[#1e3a8a] hover:border-[#3b82f6] text-[#dde1ff]"
           : "bg-[#fcf9f8] border-[#001255] hover:bg-white text-[#1b1c1c] brutalist-shadow"
-      } p-5 min-h-[380px] group`}
+      } p-5 h-[500px] overflow-hidden group`}
     >
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
