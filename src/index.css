@@ -50,7 +50,7 @@
   box-shadow: 4px 4px 0px 0px #001255;
 }
 
-.brutalist-shadow:active {
+.brutalist-shadow-interactive:active {
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0px 0px #001255;
 }
@@ -59,7 +59,7 @@
   box-shadow: 4px 4px 0px 0px #1e3a8a;
 }
 
-.brutalist-shadow-blue:active {
+.brutalist-shadow-blue-interactive:active {
   transform: translate(2px, 2px);
   box-shadow: 2px 2px 0px 0px #1e3a8a;
 }
