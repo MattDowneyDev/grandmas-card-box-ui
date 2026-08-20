@@ -72,12 +72,12 @@ export const SearchView: React.FC<SearchViewProps> = ({
             isDark ? "text-[#3b82f6]" : "text-[#001255]"
           }`}
         >
-          DIRECT SEARCH & DATA QUERY
+          INDEX CARD RECIPES (WITHOUT THE BACKSTORY)
         </h1>
         <p
           className={`text-xs font-mono tracking-widest mt-1 uppercase ${isDark ? "text-[#9ca3af]" : "text-[#5f5e5a]"}`}
         >
-          NO ALGORITHMIC RECOMMENDATIONS. DIRECT KEYWORD MATCHING ONLY.
+          SKIP THE 3,000 WORD ESSAY. JUST FIND THE FOOD.
         </p>
       </div>
 

@@ -48,7 +48,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       >
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setActiveTab("my-box")}
+            onClick={() => setActiveTab("search")}
             className="text-left font-bold text-xs uppercase tracking-widest flex items-center gap-1.5"
           >
             <span className="font-heading text-sm font-black">CARD BOX</span>
@@ -141,7 +141,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           }`}
         >
           <div
-            onClick={() => setActiveTab("my-box")}
+            onClick={() => setActiveTab("search")}
             className={`cursor-pointer text-2xl font-black font-heading tracking-tight uppercase ${
               isDark ? "text-[#3b82f6]" : "text-[#001255]"
             }`}
