@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from "react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
+import { AuthSession, login, signup } from "./api/auth";
 import {
   createRecipe,
   deleteRecipe,
@@ -47,13 +48,17 @@ export default function App() {
     return INITIAL_RECIPES;
   });
 
+  const [authToken, setAuthToken] = useState<string | null>(() =>
+    localStorage.getItem("cardbox_token"),
+  );
+
   useEffect(() => {
-    getRecipes()
+    getRecipes(authToken || undefined)
       .then(setRecipes)
       .catch((error) => {
         console.error("Failed to load recipes from API", error);
       });
-  }, []);
+  }, [authToken]);
 
   // Theme mode: default to 'light' (matches Image 7 paper archive) or 'dark' (Image 5 terminal)
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -100,7 +105,7 @@ export default function App() {
     return localStorage.getItem("cardbox_user") || "CHEF_001";
   });
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return localStorage.getItem("cardbox_auth") === "true";
+    return Boolean(localStorage.getItem("cardbox_token"));
   });
 
   // Persist recipes
@@ -139,7 +144,7 @@ export default function App() {
     if (!recipe) return;
 
     const nextInMyBox = !recipe.inMyBox;
-    setRecipeFavorite(recipeId, nextInMyBox)
+    setRecipeFavorite(recipeId, nextInMyBox, authToken || undefined)
       .then(() => {
         setRecipes((prev) =>
           prev.map((item) =>
@@ -161,7 +166,7 @@ export default function App() {
   const handleSaveRecipe = async (
     newRecipeData: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => {
-    createRecipe(newRecipeData)
+    createRecipe(newRecipeData, authToken || undefined)
       .then((newRecipe) => {
         setRecipes((prev) => [newRecipe, ...prev]);
         handleTabChange("my-box");
@@ -171,7 +176,7 @@ export default function App() {
 
   // Delete user-created recipe
   const handleDeleteRecipe = (recipeId: string) => {
-    deleteRecipe(recipeId)
+    deleteRecipe(recipeId, authToken || undefined)
       .then(() => {
         setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
         if (selectedRecipe?.id === recipeId) {
@@ -181,16 +186,20 @@ export default function App() {
       .catch((error) => console.error("Failed to delete recipe", error));
   };
 
-  const handleLogin = (handle: string) => {
-    setUserHandle(handle);
+  const handleLogin = async (session: AuthSession) => {
+    setAuthToken(session.token);
+    setUserHandle(session.displayName.toUpperCase());
     setIsLoggedIn(true);
-    localStorage.setItem("cardbox_user", handle);
+    localStorage.setItem("cardbox_token", session.token);
+    localStorage.setItem("cardbox_user", session.displayName.toUpperCase());
     localStorage.setItem("cardbox_auth", "true");
   };
 
   const handleLogout = () => {
     setUserHandle("GUEST_CHEF");
     setIsLoggedIn(false);
+    setAuthToken(null);
+    localStorage.removeItem("cardbox_token");
     localStorage.removeItem("cardbox_auth");
   };
 
@@ -287,6 +296,8 @@ export default function App() {
           isLoggedIn={isLoggedIn}
           onClose={() => setIsLoginOpen(false)}
           onLogin={handleLogin}
+          onLoginWithPassword={login}
+          onSignup={signup}
           onLogout={handleLogout}
         />
       )}

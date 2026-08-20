@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { ThemeMode } from '../types';
-import { X, Key, UserCheck, ShieldCheck } from 'lucide-react';
+import React, { useState } from "react";
+import { ThemeMode } from "../types";
+import { X, Key, UserCheck, ShieldCheck } from "lucide-react";
+import { AuthSession } from "../api/auth";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -8,7 +9,16 @@ interface LoginModalProps {
   userHandle: string;
   isLoggedIn: boolean;
   onClose: () => void;
-  onLogin: (handle: string) => void;
+  onLogin: (session: AuthSession) => void;
+  onLoginWithPassword: (
+    email: string,
+    password: string,
+  ) => Promise<AuthSession>;
+  onSignup: (
+    email: string,
+    password: string,
+    displayName: string,
+  ) => Promise<AuthSession>;
   onLogout: () => void;
 }
 
@@ -19,18 +29,41 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   isLoggedIn,
   onClose,
   onLogin,
+  onLoginWithPassword,
+  onSignup,
   onLogout,
 }) => {
   if (!isOpen) return null;
 
-  const isDark = theme === 'dark';
-  const [handleInput, setHandleInput] = useState(userHandle === 'GUEST_CHEF' ? '' : userHandle);
+  const isDark = theme === "dark";
+  const [emailInput, setEmailInput] = useState("");
+  const [passwordInput, setPasswordInput] = useState("");
+  const [displayNameInput, setDisplayNameInput] = useState("");
+  const [isSignup, setIsSignup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (handleInput.trim()) {
-      onLogin(handleInput.trim().toUpperCase());
+    setIsSubmitting(true);
+    setErrorMessage(null);
+
+    try {
+      const session = isSignup
+        ? await onSignup(
+            emailInput.trim(),
+            passwordInput,
+            displayNameInput.trim(),
+          )
+        : await onLoginWithPassword(emailInput.trim(), passwordInput);
+      onLogin(session);
       onClose();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Authentication failed",
+      );
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -39,8 +72,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       <div
         className={`relative w-full max-w-md border p-6 md:p-8 font-mono ${
           isDark
-            ? 'bg-[#050b14] border-[#1e3a8a] text-white'
-            : 'bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow'
+            ? "bg-[#050b14] border-[#1e3a8a] text-white"
+            : "bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow"
         }`}
       >
         <div className="flex items-center justify-between border-b pb-3 mb-6 border-current">
@@ -53,7 +86,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <button
             onClick={onClose}
             className={`p-1 border ${
-              isDark ? 'border-[#1e3a8a] text-white' : 'border-[#001255] text-[#001255]'
+              isDark
+                ? "border-[#1e3a8a] text-white"
+                : "border-[#001255] text-[#001255]"
             }`}
           >
             <X className="w-4 h-4" />
@@ -73,7 +108,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </div>
 
             <p className="text-xs opacity-80 leading-relaxed">
-              Your recipes and saved cards are directly synchronized with your local workspace index.
+              Your recipes and saved cards are directly synchronized with your
+              local workspace index.
             </p>
 
             <div className="flex gap-3 pt-4 border-t border-current/20">
@@ -88,7 +124,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 type="button"
                 onClick={onClose}
                 className={`w-1/2 py-2 text-xs font-bold uppercase ${
-                  isDark ? 'bg-[#1e3a8a] text-white' : 'bg-[#001255] text-white'
+                  isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"
                 }`}
               >
                 DONE
@@ -98,26 +134,71 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs opacity-80 leading-relaxed">
-              Enter your cook handle or key ID to personalize your card box index. No passwords, no marketing trackers.
+              {isSignup
+                ? "Create an account to sync your recipes and saved cards."
+                : "Enter your account credentials to access your synced recipe box."}
             </p>
 
             <div>
+              {isSignup && (
+                <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
+                  DISPLAY NAME
+                </label>
+              )}
+              {isSignup && (
+                <input
+                  type="text"
+                  required
+                  value={displayNameInput}
+                  onChange={(e) => setDisplayNameInput(e.target.value)}
+                  placeholder="e.g. CHEF_001"
+                  className={`w-full mb-3 p-2.5 font-mono text-xs border uppercase tracking-wider ${
+                    isDark
+                      ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
+                      : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
+                  }`}
+                />
+              )}
               <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
-                COOK HANDLE / IDENTIFIER
+                EMAIL
               </label>
               <input
-                type="text"
+                type="email"
                 required
-                value={handleInput}
-                onChange={(e) => setHandleInput(e.target.value)}
-                placeholder="e.g. CHEF_001, GORDON_R, DATA_EATER"
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="chef@example.com"
                 className={`w-full p-2.5 font-mono text-xs border uppercase tracking-wider ${
                   isDark
-                    ? 'bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]'
-                    : 'bg-white border-[#001255] text-[#001255] focus:border-[#001255]'
+                    ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
+                    : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
                 }`}
               />
             </div>
+
+            <div>
+              <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
+                PASSWORD
+              </label>
+              <input
+                type="password"
+                required
+                minLength={8}
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                className={`w-full p-2.5 font-mono text-xs border ${
+                  isDark
+                    ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
+                    : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
+                }`}
+              />
+            </div>
+
+            {errorMessage && (
+              <div className="border border-red-600 p-2 text-xs text-red-500">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="pt-2 flex justify-end gap-3">
               <button
@@ -128,12 +209,27 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 CANCEL
               </button>
               <button
+                type="button"
+                onClick={() => {
+                  setIsSignup(!isSignup);
+                  setErrorMessage(null);
+                }}
+                className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+              >
+                {isSignup ? "HAVE AN ACCOUNT" : "CREATE ACCOUNT"}
+              </button>
+              <button
                 type="submit"
+                disabled={isSubmitting}
                 className={`px-5 py-2 text-xs font-bold uppercase ${
-                  isDark ? 'bg-[#1e3a8a] text-white' : 'bg-[#001255] text-white'
+                  isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"
                 }`}
               >
-                SET HANDLE
+                {isSubmitting
+                  ? "CONNECTING..."
+                  : isSignup
+                    ? "SIGN UP"
+                    : "LOG IN"}
               </button>
             </div>
           </form>
