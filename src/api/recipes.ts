@@ -7,7 +7,9 @@ interface ApiRecipe {
   title: string;
   ingredients: string[];
   instructions: string[];
+  prepTimeMin?: number;
   cookTimeMin: number;
+  totalTimeMin?: number;
   tag: string;
   imageUrl?: string;
   warningNote?: string;
@@ -19,7 +21,12 @@ interface ApiRecipe {
 }
 
 function mapApiRecipe(recipe: ApiRecipe): Recipe {
-  return recipe;
+  const prepTimeMin = recipe.prepTimeMin || 0;
+  return {
+    ...recipe,
+    prepTimeMin,
+    totalTimeMin: recipe.totalTimeMin ?? prepTimeMin + recipe.cookTimeMin,
+  };
 }
 
 function authHeaders(token?: string): Record<string, string> {

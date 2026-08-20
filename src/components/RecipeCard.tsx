@@ -104,7 +104,13 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           </div>
           <div className="flex items-center gap-2">
             <Clock className="w-3.5 h-3.5 opacity-70 shrink-0" />
-            <span>{recipe.cookTimeMin} min cook time</span>
+            <span>
+              {recipe.prepTimeMin || 0} min prep / {recipe.cookTimeMin} min cook
+              /{" "}
+              {recipe.totalTimeMin ??
+                (recipe.prepTimeMin || 0) + recipe.cookTimeMin}{" "}
+              min total
+            </span>
           </div>
           <div className="text-[11px] uppercase tracking-wider font-semibold opacity-90">
             Tag: {recipe.tag}

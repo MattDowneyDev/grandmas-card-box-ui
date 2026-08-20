@@ -41,6 +41,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
     "",
   ]);
   const [cookTime, setCookTime] = useState<number>(25);
+  const [prepTime, setPrepTime] = useState<number>(10);
   const [tag, setTag] = useState<string>("Dinner");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [warningNote, setWarningNote] = useState<string>(
@@ -178,7 +179,9 @@ export const UploadView: React.FC<UploadViewProps> = ({
       title: cleanTitle,
       ingredients: cleanIngredients,
       instructions: cleanInstructions,
+      prepTimeMin: prepTime,
       cookTimeMin: cookTime,
+      totalTimeMin: prepTime + cookTime,
       tag: tag || "Dinner",
       imageUrl: imageUrl || undefined,
       warningNote: warningNote.trim() || undefined,
@@ -330,8 +333,8 @@ export const UploadView: React.FC<UploadViewProps> = ({
           />
         </div>
 
-        {/* Recipe Meta Options: Tag & Cook Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 font-mono text-xs">
+        {/* Recipe Meta Options: Tag, Prep Time & Cook Time */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 font-mono text-xs">
           <div>
             <label
               className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
@@ -354,6 +357,26 @@ export const UploadView: React.FC<UploadViewProps> = ({
               <option value="Breakfast">Breakfast</option>
               <option value="Staple">Staple</option>
             </select>
+          </div>
+
+          <div>
+            <label
+              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
+            >
+              PREP TIME (MINUTES)
+            </label>
+            <input
+              type="number"
+              min={0}
+              max={480}
+              value={prepTime}
+              onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
+              className={`w-full p-2 border font-mono text-xs ${
+                isDark
+                  ? "bg-[#030712] border-[#1e3a8a] text-white"
+                  : "bg-white border-[#001255] text-[#001255]"
+              }`}
+            />
           </div>
 
           <div>

@@ -37,7 +37,7 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
 
   const handleCopyQuickData = (e: React.MouseEvent, recipe: Recipe) => {
     e.stopPropagation();
-    const textData = `=== ${recipe.title} (ID: ${recipe.id}) ===\nCOOK TIME: ${recipe.cookTimeMin} MIN | TAG: ${recipe.tag}\n\nINGREDIENTS:\n${recipe.ingredients.map((i) => `- ${i}`).join("\n")}\n\nINSTRUCTIONS:\n${recipe.instructions.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}\n\nNO BACKSTORY. JUST DATA.`;
+    const textData = `=== ${recipe.title} (ID: ${recipe.id}) ===\nPREP TIME: ${recipe.prepTimeMin || 0} MIN | COOK TIME: ${recipe.cookTimeMin} MIN | TOTAL TIME: ${recipe.totalTimeMin ?? (recipe.prepTimeMin || 0) + recipe.cookTimeMin} MIN | TAG: ${recipe.tag}\n\nINGREDIENTS:\n${recipe.ingredients.map((i) => `- ${i}`).join("\n")}\n\nINSTRUCTIONS:\n${recipe.instructions.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}\n\nNO BACKSTORY. JUST DATA.`;
     navigator.clipboard.writeText(textData);
     setCopiedId(recipe.id);
     setTimeout(() => setCopiedId(null), 2000);

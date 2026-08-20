@@ -1,6 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { Recipe, ThemeMode } from '../types';
-import { X, Clock, Utensils, Bookmark, BookmarkCheck, Copy, Check, Printer, Play, Pause, RotateCcw, AlertTriangle, Share2 } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { Recipe, ThemeMode } from "../types";
+import {
+  X,
+  Clock,
+  Utensils,
+  Bookmark,
+  BookmarkCheck,
+  Copy,
+  Check,
+  Printer,
+  Play,
+  Pause,
+  RotateCcw,
+  AlertTriangle,
+  Share2,
+} from "lucide-react";
 
 interface RecipeModalProps {
   recipe: Recipe | null;
@@ -19,10 +33,14 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
 }) => {
   if (!recipe) return null;
 
-  const isDark = theme === 'dark';
+  const isDark = theme === "dark";
 
-  const [checkedIngredients, setCheckedIngredients] = useState<Record<number, boolean>>({});
-  const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>({});
+  const [checkedIngredients, setCheckedIngredients] = useState<
+    Record<number, boolean>
+  >({});
+  const [completedSteps, setCompletedSteps] = useState<Record<number, boolean>>(
+    {},
+  );
   const [copied, setCopied] = useState(false);
 
   // Cook timer state
@@ -46,10 +64,12 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
       setIsTimerRunning(false);
       // Play brief web audio beep
       try {
-        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const audioCtx = new (
+          window.AudioContext || (window as any).webkitAudioContext
+        )();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
-        osc.type = 'sine';
+        osc.type = "sine";
         osc.frequency.setValueAtTime(880, audioCtx.currentTime);
         gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
         osc.connect(gain);
@@ -66,7 +86,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   const formatTimer = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
   const toggleIngredient = (idx: number) => {
@@ -78,7 +98,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   };
 
   const handleCopyText = () => {
-    const plainText = `=== ${recipe.title} (ID: ${recipe.id}) ===\nTAG: ${recipe.tag} | COOK TIME: ${recipe.cookTimeMin} MIN\n\nINGREDIENTS:\n${recipe.ingredients.map((ing) => `• ${ing}`).join('\n')}\n\nINSTRUCTIONS:\n${recipe.instructions.map((s, i) => `${i + 1}. ${s}`).join('\n')}\n\n${recipe.warningNote || ''}\n\nNO BACKSTORY. JUST DATA.`;
+    const plainText = `=== ${recipe.title} (ID: ${recipe.id}) ===\nTAG: ${recipe.tag} | COOK TIME: ${recipe.cookTimeMin} MIN\n\nINGREDIENTS:\n${recipe.ingredients.map((ing) => `• ${ing}`).join("\n")}\n\nINSTRUCTIONS:\n${recipe.instructions.map((s, i) => `${i + 1}. ${s}`).join("\n")}\n\n${recipe.warningNote || ""}\n\nNO BACKSTORY. JUST DATA.`;
     navigator.clipboard.writeText(plainText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -94,8 +114,8 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         id="recipe-index-card-modal"
         className={`relative w-full max-w-3xl my-8 border p-6 md:p-10 font-mono ${
           isDark
-            ? 'bg-[#050b14] border-[#1e3a8a] text-white shadow-2xl'
-            : 'bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow'
+            ? "bg-[#050b14] border-[#1e3a8a] text-white shadow-2xl"
+            : "bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow"
         }`}
       >
         {/* Top Header Controls */}
@@ -103,7 +123,9 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           <div className="flex items-center gap-3">
             <span
               className={`text-xs px-2 py-0.5 font-bold tracking-widest border ${
-                isDark ? 'border-[#3b82f6] text-[#60a5fa]' : 'border-[#001255] text-[#001255]'
+                isDark
+                  ? "border-[#3b82f6] text-[#60a5fa]"
+                  : "border-[#001255] text-[#001255]"
               }`}
             >
               ID: {recipe.id}
@@ -119,13 +141,19 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               onClick={handleCopyText}
               className={`p-1.5 border text-xs flex items-center gap-1 transition-none ${
                 isDark
-                  ? 'border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a]'
-                  : 'border-[#001255] text-[#001255] hover:bg-[#e5e2dc]'
+                  ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a]"
+                  : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
               }`}
               title="Copy pure text data"
             >
-              {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-              <span className="hidden sm:inline text-[11px]">{copied ? 'COPIED' : 'COPY'}</span>
+              {copied ? (
+                <Check className="w-4 h-4 text-green-500" />
+              ) : (
+                <Copy className="w-4 h-4" />
+              )}
+              <span className="hidden sm:inline text-[11px]">
+                {copied ? "COPIED" : "COPY"}
+              </span>
             </button>
 
             {/* Print card */}
@@ -133,8 +161,8 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               onClick={handlePrint}
               className={`p-1.5 border text-xs flex items-center gap-1 transition-none ${
                 isDark
-                  ? 'border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a]'
-                  : 'border-[#001255] text-[#001255] hover:bg-[#e5e2dc]'
+                  ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a]"
+                  : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
               }`}
               title="Print index card"
             >
@@ -148,15 +176,19 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               className={`p-1.5 border text-xs flex items-center gap-1 transition-none ${
                 recipe.inMyBox
                   ? isDark
-                    ? 'bg-[#1e3a8a] text-white border-[#3b82f6]'
-                    : 'bg-[#001255] text-white border-[#001255]'
+                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
+                    : "bg-[#001255] text-white border-[#001255]"
                   : isDark
-                  ? 'border-[#1e3a8a] text-[#93c5fd]'
-                  : 'border-[#001255] text-[#001255]'
+                    ? "border-[#1e3a8a] text-[#93c5fd]"
+                    : "border-[#001255] text-[#001255]"
               }`}
-              title={recipe.inMyBox ? 'In your box' : 'Add to your box'}
+              title={recipe.inMyBox ? "In your box" : "Add to your box"}
             >
-              {recipe.inMyBox ? <BookmarkCheck className="w-4 h-4" /> : <Bookmark className="w-4 h-4" />}
+              {recipe.inMyBox ? (
+                <BookmarkCheck className="w-4 h-4" />
+              ) : (
+                <Bookmark className="w-4 h-4" />
+              )}
             </button>
 
             {/* Close button */}
@@ -165,8 +197,8 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               onClick={onClose}
               className={`p-1.5 border transition-none ml-2 ${
                 isDark
-                  ? 'border-[#1e3a8a] text-gray-300 hover:text-white hover:bg-[#1e3a8a]'
-                  : 'border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white'
+                  ? "border-[#1e3a8a] text-gray-300 hover:text-white hover:bg-[#1e3a8a]"
+                  : "border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white"
               }`}
             >
               <X className="w-4 h-4" />
@@ -178,7 +210,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         <div className="mb-6">
           <h2
             className={`text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading uppercase tracking-tight mb-2 ${
-              isDark ? 'text-[#3b82f6]' : 'text-[#001255]'
+              isDark ? "text-[#3b82f6]" : "text-[#001255]"
             }`}
           >
             {recipe.title}
@@ -191,7 +223,11 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
             </span>
             <span className="flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5" />
-              {recipe.cookTimeMin} MIN COOK TIME
+              {recipe.prepTimeMin || 0} MIN PREP / {recipe.cookTimeMin} MIN COOK
+              /{" "}
+              {recipe.totalTimeMin ??
+                (recipe.prepTimeMin || 0) + recipe.cookTimeMin}{" "}
+              MIN TOTAL
             </span>
             {recipe.servings && <span>{recipe.servings} SERVINGS</span>}
           </div>
@@ -200,23 +236,35 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         {/* Optional Image Banner */}
         {recipe.imageUrl && (
           <div className="mb-6 border border-current/30 overflow-hidden max-h-64 bg-black/10">
-            <img src={recipe.imageUrl} alt={recipe.title} className="w-full h-64 object-cover" />
+            <img
+              src={recipe.imageUrl}
+              alt={recipe.title}
+              className="w-full h-64 object-cover"
+            />
           </div>
         )}
 
         {/* Cook Timer Bar */}
         <div
           className={`p-3 mb-6 border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
-            isDark ? 'bg-[#030712] border-[#1e3a8a]' : 'bg-[#f0eded] border-[#001255]'
+            isDark
+              ? "bg-[#030712] border-[#1e3a8a]"
+              : "bg-[#f0eded] border-[#001255]"
           }`}
         >
           <div className="flex items-center gap-2">
             <Clock className="w-4 h-4" />
-            <span className="font-bold uppercase tracking-wider">KITCHEN TIMER:</span>
+            <span className="font-bold uppercase tracking-wider">
+              KITCHEN TIMER:
+            </span>
             <span className="font-mono text-base font-bold text-blue-600 dark:text-blue-400">
               {formatTimer(timerSeconds)}
             </span>
-            {timerSeconds === 0 && <span className="text-red-500 font-bold uppercase">TIME COMPLETE!</span>}
+            {timerSeconds === 0 && (
+              <span className="text-red-500 font-bold uppercase">
+                TIME COMPLETE!
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-2">
@@ -224,14 +272,18 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               onClick={() => setIsTimerRunning(!isTimerRunning)}
               className={`px-3 py-1 font-bold border uppercase flex items-center gap-1 transition-none ${
                 isTimerRunning
-                  ? 'bg-amber-600 text-white border-amber-700'
+                  ? "bg-amber-600 text-white border-amber-700"
                   : isDark
-                  ? 'bg-[#1e3a8a] text-white border-[#3b82f6]'
-                  : 'bg-[#001255] text-white border-[#001255]'
+                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
+                    : "bg-[#001255] text-white border-[#001255]"
               }`}
             >
-              {isTimerRunning ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-              <span>{isTimerRunning ? 'PAUSE' : 'START TIMER'}</span>
+              {isTimerRunning ? (
+                <Pause className="w-3 h-3" />
+              ) : (
+                <Play className="w-3 h-3" />
+              )}
+              <span>{isTimerRunning ? "PAUSE" : "START TIMER"}</span>
             </button>
 
             <button
@@ -253,11 +305,15 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           <div>
             <h3
               className={`text-xs font-bold uppercase tracking-widest border-b pb-2 mb-4 flex justify-between items-center ${
-                isDark ? 'text-[#60a5fa] border-[#1e3a8a]' : 'text-[#001255] border-[#001255]'
+                isDark
+                  ? "text-[#60a5fa] border-[#1e3a8a]"
+                  : "text-[#001255] border-[#001255]"
               }`}
             >
               <span>INGREDIENTS</span>
-              <span className="text-[10px] opacity-70 font-normal">CLICK TO TICK OFF</span>
+              <span className="text-[10px] opacity-70 font-normal">
+                CLICK TO TICK OFF
+              </span>
             </h3>
 
             <ul className="space-y-2 text-xs md:text-sm">
@@ -268,8 +324,10 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
                     key={idx}
                     onClick={() => toggleIngredient(idx)}
                     className={`cursor-pointer p-1.5 border-b flex items-start gap-2.5 transition-none ${
-                      isDark ? 'border-[#1e3a8a]/40 hover:bg-[#1e3a8a]/20' : 'border-[#001255]/20 hover:bg-[#e5e2dc]'
-                    } ${isChecked ? 'line-through opacity-40' : ''}`}
+                      isDark
+                        ? "border-[#1e3a8a]/40 hover:bg-[#1e3a8a]/20"
+                        : "border-[#001255]/20 hover:bg-[#e5e2dc]"
+                    } ${isChecked ? "line-through opacity-40" : ""}`}
                   >
                     <input
                       type="checkbox"
@@ -288,11 +346,15 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           <div>
             <h3
               className={`text-xs font-bold uppercase tracking-widest border-b pb-2 mb-4 flex justify-between items-center ${
-                isDark ? 'text-[#60a5fa] border-[#1e3a8a]' : 'text-[#001255] border-[#001255]'
+                isDark
+                  ? "text-[#60a5fa] border-[#1e3a8a]"
+                  : "text-[#001255] border-[#001255]"
               }`}
             >
               <span>INSTRUCTIONS</span>
-              <span className="text-[10px] opacity-70 font-normal">STEP BY STEP</span>
+              <span className="text-[10px] opacity-70 font-normal">
+                STEP BY STEP
+              </span>
             </h3>
 
             <ol className="space-y-3 text-xs md:text-sm">
@@ -303,16 +365,18 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
                     key={idx}
                     onClick={() => toggleStep(idx)}
                     className={`cursor-pointer p-2 border-b flex items-start gap-2.5 transition-none ${
-                      isDark ? 'border-[#1e3a8a]/40 hover:bg-[#1e3a8a]/20' : 'border-[#001255]/20 hover:bg-[#e5e2dc]'
-                    } ${isDone ? 'line-through opacity-40' : ''}`}
+                      isDark
+                        ? "border-[#1e3a8a]/40 hover:bg-[#1e3a8a]/20"
+                        : "border-[#001255]/20 hover:bg-[#e5e2dc]"
+                    } ${isDone ? "line-through opacity-40" : ""}`}
                   >
                     <span
                       className={`font-bold shrink-0 text-xs px-1.5 py-0.5 border ${
                         isDone
-                          ? 'border-gray-500 text-gray-500'
+                          ? "border-gray-500 text-gray-500"
                           : isDark
-                          ? 'border-[#3b82f6] text-[#60a5fa]'
-                          : 'border-[#001255] text-[#001255]'
+                            ? "border-[#3b82f6] text-[#60a5fa]"
+                            : "border-[#001255] text-[#001255]"
                       }`}
                     >
                       {idx + 1}
@@ -330,26 +394,29 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           <div
             className={`p-3 border-2 font-mono text-xs mb-6 flex items-start gap-2 ${
               isDark
-                ? 'border-red-500 text-red-400 bg-red-950/20'
-                : 'border-[#ba1a1a] text-[#ba1a1a] bg-red-50'
+                ? "border-red-500 text-red-400 bg-red-950/20"
+                : "border-[#ba1a1a] text-[#ba1a1a] bg-red-50"
             }`}
           >
             <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-            <span className="font-bold uppercase tracking-wider">{recipe.warningNote}</span>
+            <span className="font-bold uppercase tracking-wider">
+              {recipe.warningNote}
+            </span>
           </div>
         )}
 
         {/* Card Footer */}
         <div className="pt-4 border-t border-current flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <div className="text-[11px] opacity-70">
-            RECORD ARCHIVED: {new Date(recipe.createdAt).toLocaleDateString()} • PURE DATA
+            RECORD ARCHIVED: {new Date(recipe.createdAt).toLocaleDateString()} •
+            PURE DATA
           </div>
 
           <div className="flex items-center gap-3">
             {recipe.isUserUpload && onDeleteRecipe && (
               <button
                 onClick={() => {
-                  if (confirm('Delete this recipe data permanently?')) {
+                  if (confirm("Delete this recipe data permanently?")) {
                     onDeleteRecipe(recipe.id);
                     onClose();
                   }
@@ -364,8 +431,8 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               onClick={onClose}
               className={`px-4 py-2 font-bold uppercase transition-none ${
                 isDark
-                  ? 'bg-[#1e3a8a] text-white hover:bg-[#2563eb]'
-                  : 'bg-[#001255] text-white hover:bg-[#1a2a6c]'
+                  ? "bg-[#1e3a8a] text-white hover:bg-[#2563eb]"
+                  : "bg-[#001255] text-white hover:bg-[#1a2a6c]"
               }`}
             >
               DONE / CLOSE
