@@ -16,7 +16,7 @@ interface ApiRecipe {
   createdAt: string;
   isUserUpload: boolean;
   inMyBox: boolean;
-  servings?: number;
+  servings: number;
   difficulty?: "trivial" | "medium" | "high";
 }
 

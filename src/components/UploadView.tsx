@@ -29,6 +29,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
   const [steps, setSteps] = useState<string[]>(Array(10).fill(""));
   const [cookTime, setCookTime] = useState<number | "">("");
   const [prepTime, setPrepTime] = useState<number | "">("");
+  const [servings, setServings] = useState<number | "">("");
   const [tag, setTag] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [warningNote, setWarningNote] = useState<string>("");
@@ -150,6 +151,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
       prepTimeMin,
       cookTimeMin,
       totalTimeMin: prepTimeMin + cookTimeMin,
+      servings: servings === "" ? 0 : servings,
       tag: tag || "Uncategorized",
       imageUrl: imageUrl || undefined,
       warningNote: warningNote.trim() || undefined,
@@ -165,6 +167,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
     setSteps(Array(10).fill(""));
     setImageUrl("");
     setPrepTime("");
+    setServings("");
     setCookTime("");
     setTag("");
     setWarningNote("");
@@ -306,7 +309,33 @@ export const UploadView: React.FC<UploadViewProps> = ({
         </div>
 
         {/* Recipe Meta Options: Tag, Prep Time & Cook Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 font-mono text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 font-mono text-xs">
+          <div>
+            <label
+              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
+            >
+              SERVINGS
+            </label>
+            <input
+              type="number"
+              required
+              min={1}
+              max={100}
+              value={servings}
+              onChange={(e) =>
+                setServings(
+                  e.target.value === "" ? "" : parseInt(e.target.value),
+                )
+              }
+              placeholder="e.g. 4"
+              className={`w-full p-2 border font-mono text-xs ${
+                isDark
+                  ? "bg-[#030712] border-[#1e3a8a] text-white"
+                  : "bg-white border-[#001255] text-[#001255]"
+              }`}
+            />
+          </div>
+
           <div>
             <label
               className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
