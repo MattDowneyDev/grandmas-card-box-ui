@@ -200,7 +200,9 @@ export default function App() {
 
   // Delete user-created recipe
   const handleDeleteRecipe = (recipeId: string) => {
-    deleteRecipe(recipeId, authToken || undefined)
+    if (!isLoggedIn || !authToken) return;
+
+    deleteRecipe(recipeId, authToken)
       .then(() => {
         setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
         if (selectedRecipe?.id === recipeId) {
@@ -223,6 +225,7 @@ export default function App() {
     setUserHandle("GUEST_CHEF");
     setIsLoggedIn(false);
     setAuthToken(null);
+    setSelectedRecipe(null);
     localStorage.removeItem("cardbox_token");
     localStorage.removeItem("cardbox_auth");
   };
@@ -310,7 +313,7 @@ export default function App() {
           theme={theme}
           onClose={() => setSelectedRecipe(null)}
           onToggleMyBox={handleToggleMyBox}
-          onDeleteRecipe={handleDeleteRecipe}
+          onDeleteRecipe={isLoggedIn ? handleDeleteRecipe : undefined}
         />
       )}
 

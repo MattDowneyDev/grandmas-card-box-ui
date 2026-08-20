@@ -76,7 +76,7 @@ export async function createRecipe(
   return mapApiRecipe(await response.json());
 }
 
-export async function deleteRecipe(recipeId: string, token?: string): Promise<void> {
+export async function deleteRecipe(recipeId: string, token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
     method: "DELETE",
     headers: authHeaders(token),
