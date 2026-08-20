@@ -20,7 +20,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTag, setSelectedTag] = useState<string>("ALL");
-  const [maxCookTime, setMaxCookTime] = useState<number>(120);
+  const [maxTotalTime, setMaxTotalTime] = useState<number>(480);
   const [maxIngredients, setMaxIngredients] = useState<number>(10);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -36,10 +36,11 @@ export const SearchView: React.FC<SearchViewProps> = ({
     const matchesTag =
       selectedTag === "ALL" ||
       r.tag.toLowerCase() === selectedTag.toLowerCase();
-    const matchesCookTime = r.cookTimeMin <= maxCookTime;
+    const totalTime = r.totalTimeMin ?? (r.prepTimeMin || 0) + r.cookTimeMin;
+    const matchesTotalTime = totalTime <= maxTotalTime;
     const matchesIngredients = r.ingredients.length <= maxIngredients;
 
-    return matchesQuery && matchesTag && matchesCookTime && matchesIngredients;
+    return matchesQuery && matchesTag && matchesTotalTime && matchesIngredients;
   });
 
   const handleCopyQuickData = (e: React.MouseEvent, recipe: Recipe) => {
@@ -134,17 +135,17 @@ export const SearchView: React.FC<SearchViewProps> = ({
               <span
                 className={`font-bold uppercase ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
               >
-                MAX COOK TIME
+                MAX TIME
               </span>
-              <span className="font-bold">{maxCookTime} MIN</span>
+              <span className="font-bold">{maxTotalTime} MIN</span>
             </div>
             <input
               type="range"
-              min={5}
-              max={60}
-              step={5}
-              value={maxCookTime}
-              onChange={(e) => setMaxCookTime(parseInt(e.target.value))}
+              min={15}
+              max={480}
+              step={15}
+              value={maxTotalTime}
+              onChange={(e) => setMaxTotalTime(parseInt(e.target.value))}
               className="w-full accent-[#001255]"
             />
           </div>
@@ -175,13 +176,13 @@ export const SearchView: React.FC<SearchViewProps> = ({
         <span>MATCHING DATA RECORDS: {filtered.length}</span>
         {(searchQuery ||
           selectedTag !== "ALL" ||
-          maxCookTime < 120 ||
+          maxTotalTime < 480 ||
           maxIngredients < 10) && (
           <button
             onClick={() => {
               setSearchQuery("");
               setSelectedTag("ALL");
-              setMaxCookTime(120);
+              setMaxTotalTime(480);
               setMaxIngredients(10);
             }}
             className="text-red-500 hover:underline"
@@ -204,7 +205,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
             NO DATA MATCHED YOUR EXACT QUERY.
           </div>
           <p className="text-xs font-mono opacity-80">
-            Try relaxing your cook time or ingredient filters.
+            Try relaxing your total time or ingredient filters.
           </p>
         </div>
       ) : (
