@@ -6,6 +6,12 @@
 import React, { useState, useEffect } from "react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
+import {
+  createRecipe,
+  deleteRecipe,
+  getRecipes,
+  setRecipeFavorite,
+} from "./api/recipes";
 import { Sidebar } from "./components/Sidebar";
 import { CardBoxView } from "./components/CardBoxView";
 import { UploadView } from "./components/UploadView";
@@ -40,6 +46,14 @@ export default function App() {
     }
     return INITIAL_RECIPES;
   });
+
+  useEffect(() => {
+    getRecipes()
+      .then(setRecipes)
+      .catch((error) => {
+        console.error("Failed to load recipes from API", error);
+      });
+  }, []);
 
   // Theme mode: default to 'light' (matches Image 7 paper archive) or 'dark' (Image 5 terminal)
   const [theme, setTheme] = useState<ThemeMode>(() => {
@@ -121,43 +135,50 @@ export default function App() {
 
   // Toggle recipe bookmark in My Box
   const handleToggleMyBox = (recipeId: string) => {
-    setRecipes((prev) =>
-      prev.map((r) => {
-        if (r.id === recipeId) {
-          const updated = { ...r, inMyBox: !r.inMyBox };
-          if (selectedRecipe?.id === recipeId) {
-            setSelectedRecipe(updated);
-          }
-          return updated;
-        }
-        return r;
-      }),
-    );
+    const recipe = recipes.find((item) => item.id === recipeId);
+    if (!recipe) return;
+
+    const nextInMyBox = !recipe.inMyBox;
+    setRecipeFavorite(recipeId, nextInMyBox)
+      .then(() => {
+        setRecipes((prev) =>
+          prev.map((item) =>
+            item.id === recipeId ? { ...item, inMyBox: nextInMyBox } : item,
+          ),
+        );
+        setSelectedRecipe((current) =>
+          current?.id === recipeId
+            ? { ...current, inMyBox: nextInMyBox }
+            : current,
+        );
+      })
+      .catch((error) =>
+        console.error("Failed to update recipe favorite", error),
+      );
   };
 
   // Save newly donated recipe
-  const handleSaveRecipe = (
+  const handleSaveRecipe = async (
     newRecipeData: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => {
-    const nextId = (recipes.length + 1).toString().padStart(3, "0");
-    const newRecipe: Recipe = {
-      ...newRecipeData,
-      id: nextId,
-      createdAt: new Date().toISOString(),
-      isUserUpload: true,
-      inMyBox: true,
-    };
-
-    setRecipes((prev) => [newRecipe, ...prev]);
-    handleTabChange("my-box");
+    createRecipe(newRecipeData)
+      .then((newRecipe) => {
+        setRecipes((prev) => [newRecipe, ...prev]);
+        handleTabChange("my-box");
+      })
+      .catch((error) => console.error("Failed to create recipe", error));
   };
 
   // Delete user-created recipe
   const handleDeleteRecipe = (recipeId: string) => {
-    setRecipes((prev) => prev.filter((r) => r.id !== recipeId));
-    if (selectedRecipe?.id === recipeId) {
-      setSelectedRecipe(null);
-    }
+    deleteRecipe(recipeId)
+      .then(() => {
+        setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
+        if (selectedRecipe?.id === recipeId) {
+          setSelectedRecipe(null);
+        }
+      })
+      .catch((error) => console.error("Failed to delete recipe", error));
   };
 
   const handleLogin = (handle: string) => {
