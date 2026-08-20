@@ -105,7 +105,7 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
             <button
               id="filter-quick-fixes"
               onClick={() => setActiveFilter("QUICK_FIXES")}
-              className={`px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
+              className={`order-last px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
                 activeFilter === "QUICK_FIXES"
                   ? isDark
                     ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
@@ -131,7 +131,7 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
                     : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
               }`}
             >
-              IN MY BOX ({recipes.filter((r) => r.inMyBox).length})
+              FAVORITES ({recipes.filter((r) => r.inMyBox).length})
             </button>
           </div>
         </div>
@@ -154,56 +154,58 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
         ))}
 
         {/* Empty Box Card Prompt (As seen in Image 5) */}
-        <div
-          id="empty-box-card-cta"
-          className={`flex flex-col items-center justify-center text-center p-8 min-h-[380px] border-2 border-dashed ${
-            isDark
-              ? "bg-[#030712] border-[#1e3a8a] text-white"
-              : "bg-white border-[#001255] text-[#001255] brutalist-shadow"
-          }`}
-        >
+        {filteredRecipes.length === 0 && (
           <div
-            className={`w-16 h-16 mb-4 flex items-center justify-center border-2 ${
+            id="empty-box-card-cta"
+            className={`flex flex-col items-center justify-center text-center p-8 h-[500px] border-2 border-dashed ${
               isDark
-                ? "border-[#3b82f6] text-[#3b82f6]"
-                : "border-[#001255] text-[#001255]"
+                ? "bg-[#030712] border-[#1e3a8a] text-white"
+                : "bg-white border-[#001255] text-[#001255] brutalist-shadow"
             }`}
           >
-            <Bookmark className="w-8 h-8 opacity-80" />
-          </div>
-
-          <h4 className="text-base font-bold font-mono tracking-widest uppercase mb-2 max-w-[200px] leading-snug">
-            YOUR BOX IS EMPTY. GO FIND SOME DATA.
-          </h4>
-
-          <div className="flex flex-col gap-3 w-full max-w-[180px] mt-4">
-            <button
-              id="btn-empty-card-search"
-              onClick={onNavigateToSearch}
-              className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase transition-none flex items-center justify-center gap-2 ${
+            <div
+              className={`w-16 h-16 mb-4 flex items-center justify-center border-2 ${
                 isDark
-                  ? "bg-[#1e3a8a] text-white hover:bg-[#2563eb]"
-                  : "bg-[#001255] text-white hover:bg-[#1a2a6c]"
+                  ? "border-[#3b82f6] text-[#3b82f6]"
+                  : "border-[#001255] text-[#001255]"
               }`}
             >
-              <Search className="w-3.5 h-3.5" />
-              <span>SEARCH</span>
-            </button>
+              <Bookmark className="w-8 h-8 opacity-80" />
+            </div>
 
-            <button
-              id="btn-empty-card-upload"
-              onClick={onNavigateToUpload}
-              className={`w-full py-2 px-3 font-mono text-xs font-bold uppercase border transition-none flex items-center justify-center gap-1.5 ${
-                isDark
-                  ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#111827]"
-                  : "border-[#001255] text-[#001255] hover:bg-[#f0eded]"
-              }`}
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>DONATE RECIPE</span>
-            </button>
+            <h4 className="text-base font-bold font-mono tracking-widest uppercase mb-2 max-w-[200px] leading-snug">
+              YOUR BOX IS EMPTY. GO FIND SOME RECIPES OR UPLOAD YOUR OWN.
+            </h4>
+
+            <div className="flex flex-col gap-3 w-full max-w-[180px] mt-4">
+              <button
+                id="btn-empty-card-search"
+                onClick={onNavigateToSearch}
+                className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase transition-none flex items-center justify-center gap-2 ${
+                  isDark
+                    ? "bg-[#1e3a8a] text-white hover:bg-[#2563eb]"
+                    : "bg-[#001255] text-white hover:bg-[#1a2a6c]"
+                }`}
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>SEARCH</span>
+              </button>
+
+              <button
+                id="btn-empty-card-upload"
+                onClick={onNavigateToUpload}
+                className={`w-full py-2 px-3 font-mono text-xs font-bold uppercase border transition-none flex items-center justify-center gap-1.5 ${
+                  isDark
+                    ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#111827]"
+                    : "border-[#001255] text-[#001255] hover:bg-[#f0eded]"
+                }`}
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>DONATE RECIPE</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

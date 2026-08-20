@@ -101,7 +101,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   : "text-[#5f5e5a]"
             }`}
           >
-            MY BOX
+            MY CARD BOX
             <span className="text-[10px] opacity-80">({myBoxCount})</span>
           </button>
 
@@ -208,7 +208,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             <div className="flex items-center gap-3">
               <Box className="w-4 h-4 shrink-0" />
-              <span className="tracking-widest">MY BOX</span>
+              <span className="tracking-widest">MY CARD BOX</span>
             </div>
             <span
               className={`text-xs px-1.5 py-0.5 border ${
