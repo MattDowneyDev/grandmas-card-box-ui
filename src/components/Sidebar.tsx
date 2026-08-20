@@ -51,7 +51,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onClick={() => setActiveTab("search")}
             className="text-left font-bold text-xs uppercase tracking-widest flex items-center gap-1.5"
           >
-            <span className="font-heading text-sm font-black">CARD BOX</span>
+            <span className="font-heading text-sm font-black">
+              INDEX CARD RECIPES
+            </span>
           </button>
         </div>
 
