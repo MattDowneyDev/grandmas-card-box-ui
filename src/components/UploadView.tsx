@@ -25,28 +25,13 @@ export const UploadView: React.FC<UploadViewProps> = ({
   const isDark = theme === "dark";
 
   const [recipeName, setRecipeName] = useState("");
-  const [ingredientsText, setIngredientsText] = useState(
-    "1 lb beef\n2 carrots\nWater",
-  );
-  const [steps, setSteps] = useState<string[]>([
-    "Chop everything.",
-    "Boil water.",
-    "Combine.",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-  ]);
-  const [cookTime, setCookTime] = useState<number>(25);
-  const [prepTime, setPrepTime] = useState<number>(10);
-  const [tag, setTag] = useState<string>("Dinner");
+  const [ingredients, setIngredients] = useState<string[]>(Array(10).fill(""));
+  const [steps, setSteps] = useState<string[]>(Array(10).fill(""));
+  const [cookTime, setCookTime] = useState<number | "">("");
+  const [prepTime, setPrepTime] = useState<number | "">("");
+  const [tag, setTag] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
-  const [warningNote, setWarningNote] = useState<string>(
-    "WARNING: IF THIS TAKES MORE THAN 30 MINUTES, YOU ARE DOING IT WRONG.",
-  );
+  const [warningNote, setWarningNote] = useState<string>("");
   const [isStripperOpen, setIsStripperOpen] = useState(false);
   const [blogText, setBlogText] = useState("");
   const [isStripping, setIsStripping] = useState(false);
@@ -58,6 +43,12 @@ export const UploadView: React.FC<UploadViewProps> = ({
     const updated = [...steps];
     updated[index] = value;
     setSteps(updated);
+  };
+
+  const handleIngredientChange = (index: number, value: string) => {
+    const updated = [...ingredients];
+    updated[index] = value;
+    setIngredients(updated);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -72,26 +63,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
       reader.readAsDataURL(file);
     }
   };
-
-  // Preset sample photo selector
-  const samplePhotos = [
-    {
-      name: "Stew / Soup",
-      url: "https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Meat / Roast",
-      url: "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Pasta",
-      url: "https://images.unsplash.com/photo-1621996346565-e3d5d6281084?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-      name: "Eggs / Quick",
-      url: "https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80",
-    },
-  ];
 
   // Quick Backstory Stripper
   const handleStripBackstory = () => {
@@ -133,8 +104,13 @@ export const UploadView: React.FC<UploadViewProps> = ({
       }
 
       if (detectedName) setRecipeName(detectedName.toUpperCase());
-      if (parsedIngredients.length > 0)
-        setIngredientsText(parsedIngredients.join("\n"));
+      if (parsedIngredients.length > 0) {
+        const newIngredients = Array(10).fill("");
+        parsedIngredients.slice(0, 10).forEach((ingredient, idx) => {
+          newIngredients[idx] = ingredient;
+        });
+        setIngredients(newIngredients);
+      }
       if (parsedInstructions.length > 0) {
         const newSteps = Array(10).fill("");
         parsedInstructions.slice(0, 10).forEach((st, idx) => {
@@ -156,33 +132,25 @@ export const UploadView: React.FC<UploadViewProps> = ({
     const cleanTitle = recipeName.trim()
       ? recipeName.trim().toUpperCase()
       : "UNTITLED DATA";
-    const cleanIngredients = ingredientsText
-      .split("\n")
-      .map((i) => i.trim())
+    const cleanIngredients = ingredients
+      .map((ingredient) => ingredient.trim())
       .filter((i) => i.length > 0);
 
     const cleanInstructions = steps
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
 
-    if (cleanIngredients.length === 0) {
-      alert("You must provide at least 1 ingredient.");
-      return;
-    }
-
-    if (cleanInstructions.length === 0) {
-      alert("You must provide at least 1 instruction step.");
-      return;
-    }
+    const prepTimeMin = prepTime === "" ? 0 : prepTime;
+    const cookTimeMin = cookTime === "" ? 0 : cookTime;
 
     onSaveRecipe({
       title: cleanTitle,
       ingredients: cleanIngredients,
       instructions: cleanInstructions,
-      prepTimeMin: prepTime,
-      cookTimeMin: cookTime,
-      totalTimeMin: prepTime + cookTime,
-      tag: tag || "Dinner",
+      prepTimeMin,
+      cookTimeMin,
+      totalTimeMin: prepTimeMin + cookTimeMin,
+      tag: tag || "Uncategorized",
       imageUrl: imageUrl || undefined,
       warningNote: warningNote.trim() || undefined,
       inMyBox: true,
@@ -193,9 +161,13 @@ export const UploadView: React.FC<UploadViewProps> = ({
 
     // Reset form
     setRecipeName("");
-    setIngredientsText("");
+    setIngredients(Array(10).fill(""));
     setSteps(Array(10).fill(""));
     setImageUrl("");
+    setPrepTime("");
+    setCookTime("");
+    setTag("");
+    setWarningNote("");
   };
 
   return (
@@ -324,7 +296,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
             required
             value={recipeName}
             onChange={(e) => setRecipeName(e.target.value)}
-            placeholder="e.g., BRUTALIST BEEF STEW"
+            placeholder="e.g. BITCHIN' BEEF STEW"
             className={`w-full bg-transparent border-0 border-b py-2 px-0 text-xl md:text-2xl font-bold font-heading uppercase tracking-tight focus:ring-0 ${
               isDark
                 ? "border-[#1e3a8a] brutalist-input-dark text-white placeholder-gray-600"
@@ -342,6 +314,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
               CATEGORY / TAG
             </label>
             <select
+              required
               value={tag}
               onChange={(e) => setTag(e.target.value)}
               className={`w-full p-2 border font-mono text-xs uppercase ${
@@ -350,6 +323,9 @@ export const UploadView: React.FC<UploadViewProps> = ({
                   : "bg-white border-[#001255] text-[#001255]"
               }`}
             >
+              <option value="" disabled>
+                Select a category
+              </option>
               <option value="Dinner">Dinner</option>
               <option value="Quick Fix">Quick Fix (&lt; 15 min)</option>
               <option value="Lunch">Lunch</option>
@@ -367,10 +343,16 @@ export const UploadView: React.FC<UploadViewProps> = ({
             </label>
             <input
               type="number"
+              required
               min={0}
               max={480}
               value={prepTime}
-              onChange={(e) => setPrepTime(parseInt(e.target.value) || 0)}
+              onChange={(e) =>
+                setPrepTime(
+                  e.target.value === "" ? "" : parseInt(e.target.value),
+                )
+              }
+              placeholder="e.g. 10"
               className={`w-full p-2 border font-mono text-xs ${
                 isDark
                   ? "bg-[#030712] border-[#1e3a8a] text-white"
@@ -387,10 +369,16 @@ export const UploadView: React.FC<UploadViewProps> = ({
             </label>
             <input
               type="number"
+              required
               min={1}
               max={480}
               value={cookTime}
-              onChange={(e) => setCookTime(parseInt(e.target.value) || 15)}
+              onChange={(e) =>
+                setCookTime(
+                  e.target.value === "" ? "" : parseInt(e.target.value),
+                )
+              }
+              placeholder="e.g. 25"
               className={`w-full p-2 border font-mono text-xs ${
                 isDark
                   ? "bg-[#030712] border-[#1e3a8a] text-white"
@@ -412,7 +400,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
           {/* Ingredients Column */}
           <div>
             <div
-              className={`flex justify-between items-end border-b pb-2 mb-4 ${
+              className={`flex h-7 items-start border-b pb-2 mb-4 ${
                 isDark ? "border-[#1e3a8a]" : "border-[#001255]"
               }`}
             >
@@ -424,32 +412,46 @@ export const UploadView: React.FC<UploadViewProps> = ({
               >
                 INGREDIENTS
               </label>
-              <span
-                className={`text-[11px] font-mono ${isDark ? "text-gray-400" : "text-[#5f5e5a]"}`}
-              >
-                One per line
-              </span>
             </div>
 
-            <textarea
-              id="ingredients"
-              rows={12}
-              required
-              value={ingredientsText}
-              onChange={(e) => setIngredientsText(e.target.value)}
-              placeholder="1 lb beef&#10;2 carrots&#10;Water"
-              className={`w-full bg-transparent border-none p-0 resize-none focus:ring-0 focus:outline-none font-mono text-sm leading-8 ${
-                isDark
-                  ? "ruled-line-dark text-[#dde1ff]"
-                  : "ruled-line text-[#1b1c1c]"
-              }`}
-            />
+            <ol className="list-none space-y-3 font-mono text-sm">
+              {ingredients.map((ingredient, idx) => (
+                <li
+                  key={idx}
+                  className={`flex items-baseline border-b pb-1 ${
+                    isDark ? "border-[#1e3a8a]/40" : "border-[#001255]/30"
+                  }`}
+                >
+                  <span
+                    className={`font-bold mr-2 text-xs w-5 shrink-0 ${
+                      isDark ? "text-[#60a5fa]" : "text-[#001255]"
+                    }`}
+                  >
+                    {idx + 1}.
+                  </span>
+                  <input
+                    type="text"
+                    required={idx === 0}
+                    value={ingredient}
+                    onChange={(e) =>
+                      handleIngredientChange(idx, e.target.value)
+                    }
+                    placeholder={idx === 0 ? "e.g. 1 lb beef" : ""}
+                    className={`w-full bg-transparent border-none p-0 focus:ring-0 focus:outline-none font-mono text-xs sm:text-sm ${
+                      isDark
+                        ? "text-white placeholder-gray-700"
+                        : "text-[#1b1c1c] placeholder-gray-400"
+                    }`}
+                  />
+                </li>
+              ))}
+            </ol>
           </div>
 
           {/* Steps Column (10 Numbered Lines) */}
           <div>
             <div
-              className={`border-b pb-2 mb-4 ${
+              className={`flex h-7 items-start border-b pb-2 mb-4 ${
                 isDark ? "border-[#1e3a8a]" : "border-[#001255]"
               }`}
             >
@@ -462,7 +464,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
               </label>
             </div>
 
-            <ol className="space-y-3 font-mono text-sm">
+            <ol className="list-none space-y-3 font-mono text-sm">
               {steps.map((step, idx) => (
                 <li
                   key={idx}
@@ -479,17 +481,10 @@ export const UploadView: React.FC<UploadViewProps> = ({
                   </span>
                   <input
                     type="text"
+                    required={idx === 0}
                     value={step}
                     onChange={(e) => handleStepChange(idx, e.target.value)}
-                    placeholder={
-                      idx === 0
-                        ? "Chop everything."
-                        : idx === 1
-                          ? "Boil water."
-                          : idx === 2
-                            ? "Combine."
-                            : ""
-                    }
+                    placeholder={idx === 0 ? "e.g. Chop everything." : ""}
                     className={`w-full bg-transparent border-none p-0 focus:ring-0 focus:outline-none font-mono text-xs sm:text-sm ${
                       isDark
                         ? "text-white placeholder-gray-700"
@@ -508,7 +503,7 @@ export const UploadView: React.FC<UploadViewProps> = ({
             <label
               className={`text-xs font-mono font-bold uppercase tracking-wider ${isDark ? "text-[#60a5fa]" : "text-[#001255]"}`}
             >
-              PHOTO (OPTIONAL)
+              PHOTO (HIGHLY ENCOURAGED)
             </label>
             {imageUrl && (
               <button
@@ -530,28 +525,27 @@ export const UploadView: React.FC<UploadViewProps> = ({
               />
             </div>
           ) : (
-            <div className="mb-4">
-              <div className="flex flex-wrap gap-2 text-xs font-mono mb-2">
-                <span className="opacity-70 text-[11px] self-center">
-                  Presets:
-                </span>
-                {samplePhotos.map((p, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setImageUrl(p.url)}
-                    className={`px-2 py-1 border text-[11px] ${
-                      isDark
-                        ? "border-[#1e3a8a] hover:bg-[#1e3a8a]"
-                        : "border-[#001255] hover:bg-[#e5e2dc]"
-                    }`}
-                  >
-                    {p.name}
-                  </button>
-                ))}
-              </div>
+            <div className="mb-4 text-xs font-mono opacity-70">
+              You know no one will ever try your recipe if you don't include a
+              photo.
             </div>
           )}
+
+          <button
+            type="button"
+            id="btn-attach-photo"
+            onClick={() => fileInputRef.current?.click()}
+            className={`group flex items-center gap-2 border px-4 py-2 transition-none h-10 justify-center ${
+              isDark
+                ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a] hover:text-white"
+                : "border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white"
+            }`}
+          >
+            <Camera className="w-4 h-4 shrink-0" />
+            <span className="font-mono text-xs font-bold uppercase tracking-wider">
+              {imageUrl ? "CHANGE PHOTO" : "ATTACH PHOTO"}
+            </span>
+          </button>
 
           <input
             type="file"
@@ -569,26 +563,28 @@ export const UploadView: React.FC<UploadViewProps> = ({
           }`}
         />
 
-        {/* Actions Area matching Image 7 */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-6">
-          {/* Image Upload Trigger */}
-          <button
-            type="button"
-            id="btn-attach-photo"
-            onClick={() => fileInputRef.current?.click()}
-            className={`group flex items-center gap-2 border px-4 py-2 transition-none h-12 w-full sm:w-auto justify-center ${
-              isDark
-                ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a] hover:text-white"
-                : "border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white"
-            }`}
-          >
-            <Camera className="w-4 h-4 shrink-0" />
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              {imageUrl ? "CHANGE PHOTO" : "ATTACH PHOTO"}
-            </span>
-          </button>
+        {/* Sarcastic Warning Callout matching Image 7 */}
+        <div
+          id="sarcastic-warning-callout"
+          className={`mt-8 w-full border-2 p-4 font-mono text-xs text-left ${
+            isDark
+              ? "border-red-500/80 text-red-400 bg-red-950/20"
+              : "border-[#ba1a1a] text-[#ba1a1a] bg-red-50/50"
+          }`}
+        >
+          <div className="flex items-start justify-start gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
+            <input
+              type="text"
+              value={warningNote}
+              onChange={(e) => setWarningNote(e.target.value)}
+              placeholder="Add a warning, or just let folks crash and burn. Up to you."
+              className="w-full bg-transparent border-0 p-0 text-left font-bold text-xs focus:ring-0"
+            />
+          </div>
+        </div>
 
-          {/* Submit */}
+        <div className="mt-8 flex justify-end">
           <button
             type="submit"
             id="btn-file-recipe"
@@ -600,26 +596,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
           >
             FILE RECIPE
           </button>
-        </div>
-
-        {/* Sarcastic Warning Callout matching Image 7 */}
-        <div
-          id="sarcastic-warning-callout"
-          className={`mt-8 border-2 p-4 font-mono text-xs max-w-sm ml-auto text-right ${
-            isDark
-              ? "border-red-500/80 text-red-400 bg-red-950/20"
-              : "border-[#ba1a1a] text-[#ba1a1a] bg-red-50/50"
-          }`}
-        >
-          <div className="flex items-start justify-end gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
-            <input
-              type="text"
-              value={warningNote}
-              onChange={(e) => setWarningNote(e.target.value)}
-              className="w-full bg-transparent border-0 p-0 text-right font-bold text-xs focus:ring-0"
-            />
-          </div>
         </div>
       </form>
     </div>
