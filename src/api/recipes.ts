@@ -22,8 +22,14 @@ function mapApiRecipe(recipe: ApiRecipe): Recipe {
   return recipe;
 }
 
-export async function getRecipes(): Promise<Recipe[]> {
-  const response = await fetch(`${API_BASE_URL}/recipes`);
+function authHeaders(token?: string): Record<string, string> {
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export async function getRecipes(token?: string): Promise<Recipe[]> {
+  const response = await fetch(`${API_BASE_URL}/recipes`, {
+    headers: authHeaders(token),
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to load recipes (${response.status})`);
@@ -51,7 +57,7 @@ export async function createRecipe(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...authHeaders(token),
     },
     body: JSON.stringify(recipe),
   });
@@ -66,7 +72,7 @@ export async function createRecipe(
 export async function deleteRecipe(recipeId: string, token?: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/recipes/${recipeId}`, {
     method: "DELETE",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: authHeaders(token),
   });
 
   if (!response.ok) {
@@ -81,7 +87,7 @@ export async function setRecipeFavorite(
 ): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/favorites/${recipeId}`, {
     method: inMyBox ? "POST" : "DELETE",
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    headers: authHeaders(token),
   });
 
   if (!response.ok) {
