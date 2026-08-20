@@ -65,3 +65,24 @@ export function signup(
 ): Promise<AuthSession> {
   return authenticate("signup", { email, password, displayName });
 }
+
+export async function deleteAccount(token: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const responseText = await response.text();
+  let payload: { error?: string } = {};
+
+  try {
+    payload = JSON.parse(responseText) as { error?: string };
+  } catch {
+    throw new Error(
+      `Account deletion failed (${response.status}): ${response.statusText}`,
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(payload.error || `Account deletion failed (${response.status})`);
+  }
+}

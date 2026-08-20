@@ -19,6 +19,7 @@ interface LoginModalProps {
     password: string,
     displayName: string,
   ) => Promise<AuthSession>;
+  onDeleteAccount: () => Promise<void>;
   onLogout: () => void;
 }
 
@@ -31,6 +32,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLogin,
   onLoginWithPassword,
   onSignup,
+  onDeleteAccount,
   onLogout,
 }) => {
   if (!isOpen) return null;
@@ -42,6 +44,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [isSignup, setIsSignup] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +70,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (
+      !window.confirm(
+        "Delete your account and all uploaded recipes permanently?",
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+    setErrorMessage(null);
+    try {
+      await onDeleteAccount();
+      onClose();
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : "Account deletion failed",
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
       <div
@@ -80,7 +106,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <div className="flex items-center gap-2">
             <Key className="w-5 h-5 text-blue-600" />
             <h2 className="text-lg font-bold uppercase font-heading tracking-tight">
-              DIRECT DATA ACCESS KEY
+              LOG IN / OUT
             </h2>
           </div>
           <button
@@ -101,29 +127,42 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               <UserCheck className="w-5 h-5 text-green-500 shrink-0" />
               <div>
                 <div className="text-xs uppercase font-bold text-green-600 dark:text-green-400">
-                  AUTHENTICATED AS
+                  LOGGED IN AS
                 </div>
                 <div className="text-sm font-bold font-mono">{userHandle}</div>
               </div>
             </div>
 
             <p className="text-xs opacity-80 leading-relaxed">
-              Your recipes and saved cards are directly synchronized with your
-              local workspace index.
+              Your uploaded and favorited recipes are saved automatically.
             </p>
 
-            <div className="flex gap-3 pt-4 border-t border-current/20">
+            {errorMessage && (
+              <div className="border border-red-600 p-2 text-xs text-red-500">
+                {errorMessage}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-3 pt-4 border-t border-current/20">
               <button
                 type="button"
                 onClick={onLogout}
-                className="w-1/2 py-2 text-xs font-bold uppercase border border-red-600 text-red-600 hover:bg-red-500/10"
+                className="flex-1 min-w-[120px] py-2 text-xs font-bold uppercase border border-red-600 text-red-600 hover:bg-red-500/10"
               >
-                DISCONNECT
+                LOG OUT
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAccount}
+                disabled={isDeleting}
+                className="flex-1 min-w-[120px] py-2 text-xs font-bold uppercase border border-red-900 text-red-900 hover:bg-red-900/10 disabled:opacity-50"
+              >
+                {isDeleting ? "DELETING..." : "DELETE ACCOUNT"}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className={`w-1/2 py-2 text-xs font-bold uppercase ${
+                className={`flex-1 min-w-[120px] py-2 text-xs font-bold uppercase ${
                   isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"
                 }`}
               >

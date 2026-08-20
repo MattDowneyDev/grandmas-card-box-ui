@@ -6,7 +6,13 @@
 import React, { useState, useEffect } from "react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
-import { AuthSession, getCurrentUser, login, signup } from "./api/auth";
+import {
+  AuthSession,
+  deleteAccount,
+  getCurrentUser,
+  login,
+  signup,
+} from "./api/auth";
 import {
   createRecipe,
   deleteRecipe,
@@ -221,6 +227,15 @@ export default function App() {
     localStorage.removeItem("cardbox_auth");
   };
 
+  const handleDeleteAccount = async () => {
+    if (!authToken) return;
+
+    await deleteAccount(authToken);
+    setRecipes(await getRecipes());
+    handleLogout();
+    handleTabChange("search");
+  };
+
   const myBoxRecipes = recipes.filter(
     (recipe) => recipe.isUserUpload || recipe.inMyBox,
   );
@@ -319,6 +334,7 @@ export default function App() {
           onLogin={handleLogin}
           onLoginWithPassword={login}
           onSignup={signup}
+          onDeleteAccount={handleDeleteAccount}
           onLogout={handleLogout}
         />
       )}
