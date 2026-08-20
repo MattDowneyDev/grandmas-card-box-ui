@@ -34,6 +34,9 @@ const getTabFromPath = (): "my-box" | "search" | "upload" => {
   return "search";
 };
 
+const requiresLogin = (tab: NavigationTab) =>
+  tab === "my-box" || tab === "upload";
+
 export default function App() {
   // Load recipes from localStorage or fallback to INITIAL_RECIPES
   const [recipes, setRecipes] = useState<Recipe[]>(() => {
@@ -93,6 +96,11 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<NavigationTab>(getTabFromPath);
 
   const handleTabChange = (tab: NavigationTab) => {
+    if (requiresLogin(tab) && !isLoggedIn) {
+      setIsLoginOpen(true);
+      return;
+    }
+
     if (tab in ROUTE_PATHS) {
       window.history.pushState(
         {},
@@ -126,6 +134,14 @@ export default function App() {
     return Boolean(localStorage.getItem("cardbox_token"));
   });
 
+  useEffect(() => {
+    if (requiresLogin(activeTab) && !isLoggedIn) {
+      window.history.replaceState({}, "", ROUTE_PATHS.search);
+      setActiveTab("search");
+      setIsLoginOpen(true);
+    }
+  }, [activeTab, isLoggedIn]);
+
   // Persist recipes
   useEffect(() => {
     try {
@@ -158,6 +174,11 @@ export default function App() {
 
   // Toggle recipe bookmark in My Box
   const handleToggleMyBox = (recipeId: string) => {
+    if (!isLoggedIn) {
+      setIsLoginOpen(true);
+      return;
+    }
+
     const recipe = recipes.find((item) => item.id === recipeId);
     if (!recipe) return;
 
@@ -219,6 +240,8 @@ export default function App() {
     setAuthToken(null);
     localStorage.removeItem("cardbox_token");
     localStorage.removeItem("cardbox_auth");
+    window.history.pushState({}, "", ROUTE_PATHS.search);
+    setActiveTab("search");
   };
 
   const myBoxCount = recipes.filter((r) => r.inMyBox).length;
