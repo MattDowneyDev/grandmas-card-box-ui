@@ -24,18 +24,6 @@ export const SearchView: React.FC<SearchViewProps> = ({
   const [maxIngredients, setMaxIngredients] = useState<number>(10);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // Common quick ingredient buttons
-  const quickIngredients = [
-    "Beef",
-    "Chicken",
-    "Egg",
-    "Tomato",
-    "Pasta",
-    "Garlic",
-    "Rice",
-    "Salmon",
-  ];
-
   const filtered = recipes.filter((r) => {
     const query = searchQuery.toLowerCase().trim();
     const matchesQuery =
@@ -113,28 +101,6 @@ export const SearchView: React.FC<SearchViewProps> = ({
               <X className="w-4 h-4" />
             </button>
           )}
-        </div>
-
-        {/* Quick Keyword Tokens */}
-        <div className="flex flex-wrap items-center gap-2 mb-4 font-mono text-xs">
-          <span className="opacity-70 text-[11px]">QUICK INDEX:</span>
-          {quickIngredients.map((ing) => (
-            <button
-              key={ing}
-              onClick={() => setSearchQuery(ing)}
-              className={`px-2.5 py-1 border transition-none uppercase ${
-                searchQuery.toLowerCase() === ing.toLowerCase()
-                  ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-                  : isDark
-                    ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#111827]"
-                    : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-              }`}
-            >
-              {ing}
-            </button>
-          ))}
         </div>
 
         {/* Parameter Sliders / Filters */}

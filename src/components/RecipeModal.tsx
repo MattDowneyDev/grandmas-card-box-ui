@@ -9,9 +9,6 @@ import {
   Copy,
   Check,
   Printer,
-  Play,
-  Pause,
-  RotateCcw,
   AlertTriangle,
   Share2,
 } from "lucide-react";
@@ -43,51 +40,10 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   );
   const [copied, setCopied] = useState(false);
 
-  // Cook timer state
-  const [timerSeconds, setTimerSeconds] = useState(recipe.cookTimeMin * 60);
-  const [isTimerRunning, setIsTimerRunning] = useState(false);
-
   useEffect(() => {
-    setTimerSeconds(recipe.cookTimeMin * 60);
-    setIsTimerRunning(false);
     setCheckedIngredients({});
     setCompletedSteps({});
   }, [recipe]);
-
-  useEffect(() => {
-    let interval: any = null;
-    if (isTimerRunning && timerSeconds > 0) {
-      interval = setInterval(() => {
-        setTimerSeconds((prev) => prev - 1);
-      }, 1000);
-    } else if (timerSeconds === 0 && isTimerRunning) {
-      setIsTimerRunning(false);
-      // Play brief web audio beep
-      try {
-        const audioCtx = new (
-          window.AudioContext || (window as any).webkitAudioContext
-        )();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        osc.stop(audioCtx.currentTime + 0.5);
-      } catch (e) {
-        // audio context fallback
-      }
-    }
-    return () => clearInterval(interval);
-  }, [isTimerRunning, timerSeconds]);
-
-  const formatTimer = (totalSeconds: number) => {
-    const mins = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
-  };
 
   const toggleIngredient = (idx: number) => {
     setCheckedIngredients((prev) => ({ ...prev, [idx]: !prev[idx] }));
@@ -121,15 +77,6 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         {/* Top Header Controls */}
         <div className="flex items-center justify-between border-b pb-4 mb-6 border-current">
           <div className="flex items-center gap-3">
-            <span
-              className={`text-xs px-2 py-0.5 font-bold tracking-widest border ${
-                isDark
-                  ? "border-[#3b82f6] text-[#60a5fa]"
-                  : "border-[#001255] text-[#001255]"
-              }`}
-            >
-              ID: {recipe.id}
-            </span>
             <span className="text-xs uppercase tracking-wider opacity-80">
               TAG: {recipe.tag}
             </span>
@@ -244,61 +191,6 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           </div>
         )}
 
-        {/* Cook Timer Bar */}
-        <div
-          className={`p-3 mb-6 border flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
-            isDark
-              ? "bg-[#030712] border-[#1e3a8a]"
-              : "bg-[#f0eded] border-[#001255]"
-          }`}
-        >
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span className="font-bold uppercase tracking-wider">
-              KITCHEN TIMER:
-            </span>
-            <span className="font-mono text-base font-bold text-blue-600 dark:text-blue-400">
-              {formatTimer(timerSeconds)}
-            </span>
-            {timerSeconds === 0 && (
-              <span className="text-red-500 font-bold uppercase">
-                TIME COMPLETE!
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsTimerRunning(!isTimerRunning)}
-              className={`px-3 py-1 font-bold border uppercase flex items-center gap-1 transition-none ${
-                isTimerRunning
-                  ? "bg-amber-600 text-white border-amber-700"
-                  : isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-              }`}
-            >
-              {isTimerRunning ? (
-                <Pause className="w-3 h-3" />
-              ) : (
-                <Play className="w-3 h-3" />
-              )}
-              <span>{isTimerRunning ? "PAUSE" : "START TIMER"}</span>
-            </button>
-
-            <button
-              onClick={() => {
-                setIsTimerRunning(false);
-                setTimerSeconds(recipe.cookTimeMin * 60);
-              }}
-              className="p-1 border border-current/40 hover:bg-black/10"
-              title="Reset timer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        </div>
-
         {/* Main Content Grid: Ingredients & Instructions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           {/* Ingredients with checklist */}
@@ -311,9 +203,6 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               }`}
             >
               <span>INGREDIENTS</span>
-              <span className="text-[10px] opacity-70 font-normal">
-                CLICK TO TICK OFF
-              </span>
             </h3>
 
             <ul className="space-y-2 text-xs md:text-sm">
@@ -352,9 +241,6 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
               }`}
             >
               <span>INSTRUCTIONS</span>
-              <span className="text-[10px] opacity-70 font-normal">
-                STEP BY STEP
-              </span>
             </h3>
 
             <ol className="space-y-3 text-xs md:text-sm">
