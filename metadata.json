@@ -1,6 +1,8 @@
 {
-  "name": "Card Box",
+  "name": "Index Card Recipes",
   "description": "Direct data access brutalist recipe box — no backstory, just data.",
   "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }
