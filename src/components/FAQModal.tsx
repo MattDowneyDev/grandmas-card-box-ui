@@ -102,9 +102,10 @@ export const FAQModal: React.FC<FAQModalProps> = ({ type, theme, onClose }) => {
               mouse, your heartbeat, or what supermarket you visit.
             </p>
             <p>
-              <strong>2. LOCAL STORAGE FIRST:</strong> Your personal card box
-              and custom recipe donations are stored in your browser's
-              persistent storage.
+              <strong>2. THE DATABASE KNOWS:</strong> Your account and recipe
+              donations live in the database. Your browser keeps the session
+              token and interface preferences, because apparently memory is
+              still useful for something.
             </p>
             <p>
               <strong>3. ZERO COOKIES FOR ADS:</strong> We have no banner

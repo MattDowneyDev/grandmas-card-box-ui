@@ -408,8 +408,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         {/* Card Footer */}
         <div className="pt-4 border-t border-current flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
           <div className="text-[11px] opacity-70">
-            RECORD ARCHIVED: {new Date(recipe.createdAt).toLocaleDateString()} •
-            PURE DATA
+            RECORD ARCHIVED: {new Date(recipe.createdAt).toLocaleDateString()}
           </div>
 
           <div className="flex items-center gap-3">

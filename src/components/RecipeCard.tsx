@@ -128,8 +128,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
       <div
         className={`pt-3 border-t flex items-center justify-between font-mono text-xs ${isDark ? "border-[#1e3a8a]" : "border-[#001255]"}`}
       >
-        <span className="font-bold tracking-widest">ID: {recipe.id}</span>
-
         <div className="flex items-center gap-2">
           <button
             onClick={(event) => onCopyQuickData(event, recipe)}

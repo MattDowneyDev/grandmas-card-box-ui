@@ -221,20 +221,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </span>
           </button>
 
-          {/* Quick FAQ info button */}
-          <button
-            id="nav-link-faq"
-            onClick={onOpenFAQ}
-            className={`flex items-center gap-3 px-6 py-3 text-left transition-none uppercase text-xs mt-2 ${
-              isDark
-                ? "text-[#6b7280] hover:text-[#93c5fd]"
-                : "text-[#858580] hover:text-[#001255]"
-            }`}
-          >
-            <BookOpen className="w-3.5 h-3.5 shrink-0" />
-            <span className="tracking-widest">SARCASTIC FAQ</span>
-          </button>
-
           {/* Footer Area with Theme Toggle & Login */}
           <div
             className={`mt-auto mb-4 border-t pt-4 px-6 flex flex-col gap-3 ${

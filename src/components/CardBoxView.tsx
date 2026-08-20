@@ -115,7 +115,7 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
                     : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
               }`}
             >
-              QUICK FIXES (&lt; 5)
+              QUICK FIXES
             </button>
 
             <button

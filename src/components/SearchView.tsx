@@ -98,7 +98,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="TYPE INGREDIENT, RECIPE NAME, OR ID (e.g. SOTTO, BEEF, 042)..."
+            placeholder="TYPE RECIPE OR INGREDIENT NAME..."
             className={`w-full pl-11 pr-10 py-3 font-mono text-sm md:text-base border uppercase tracking-wider focus:ring-0 ${
               isDark
                 ? "bg-[#030712] border-[#1e3a8a] text-white placeholder-gray-600 focus:border-[#3b82f6]"
