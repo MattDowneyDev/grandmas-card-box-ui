@@ -14,6 +14,24 @@ interface AuthResponse {
   };
 }
 
+export async function getCurrentUser(
+  token: string,
+): Promise<{ email: string; displayName: string }> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const payload = (await response.json()) as {
+    user?: { email: string; displayName: string };
+    error?: string;
+  };
+
+  if (!response.ok || !payload.user) {
+    throw new Error(payload.error || "Session is no longer valid");
+  }
+
+  return payload.user;
+}
+
 async function authenticate(
   endpoint: "login" | "signup",
   body: Record<string, string>,

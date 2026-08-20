@@ -6,7 +6,7 @@
 import React, { useState, useEffect } from "react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
-import { AuthSession, login, signup } from "./api/auth";
+import { AuthSession, getCurrentUser, login, signup } from "./api/auth";
 import {
   createRecipe,
   deleteRecipe,
@@ -51,6 +51,24 @@ export default function App() {
   const [authToken, setAuthToken] = useState<string | null>(() =>
     localStorage.getItem("cardbox_token"),
   );
+
+  useEffect(() => {
+    if (!authToken) return;
+
+    getCurrentUser(authToken)
+      .then((user) => {
+        setUserHandle(user.displayName.toUpperCase());
+        setIsLoggedIn(true);
+        localStorage.setItem("cardbox_user", user.displayName.toUpperCase());
+      })
+      .catch((error) => {
+        console.error("Failed to validate API session", error);
+        setAuthToken(null);
+        setIsLoggedIn(false);
+        localStorage.removeItem("cardbox_token");
+        localStorage.removeItem("cardbox_auth");
+      });
+  }, [authToken]);
 
   useEffect(() => {
     getRecipes(authToken || undefined)
