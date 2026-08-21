@@ -3,51 +3,22 @@ import { ThemeMode } from "../types";
 
 interface FooterProps {
   theme: ThemeMode;
-  onOpenPrivacy: () => void;
-  onOpenTerms: () => void;
-  onOpenFAQ: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({
-  theme,
-  onOpenPrivacy,
-  onOpenTerms,
-  onOpenFAQ,
-}) => {
+export const Footer: React.FC<FooterProps> = ({ theme }) => {
   const isDark = theme === "dark";
 
   return (
     <footer
       id="app-footer"
-      className={`w-full py-8 px-6 flex flex-col items-center gap-4 mt-auto border-t-2 ${
+      className={`w-full py-10 px-6 flex flex-col items-center gap-4 mt-auto border-t ${
         isDark
-          ? "bg-[#030712] border-[#1e3a8a] text-[#b9c3ff]"
-          : "bg-[#fcf9f8] border-[#001255] text-[#1b1c1c]"
+          ? "bg-[#2f2a24] border-[#8d7548] text-[#f7f1e7]"
+          : "bg-[#efe6d6] border-[#6f3f27] text-[#332c24]"
       }`}
     >
-      <div className="font-mono text-xs font-bold tracking-widest text-[#ba1a1a] uppercase">
-        INDEX CARD RECIPES © {new Date().getFullYear()}
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-6 font-mono text-xs">
-        <button
-          onClick={onOpenPrivacy}
-          className="text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none uppercase"
-        >
-          Privacy
-        </button>
-        <button
-          onClick={onOpenTerms}
-          className="text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none uppercase"
-        >
-          Terms
-        </button>
-        <button
-          onClick={onOpenFAQ}
-          className="text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none uppercase"
-        >
-          FAQ
-        </button>
+      <div className="font-mono text-xs font-bold tracking-widest text-[#a84b2a]">
+        GRANDMA'S CARDBOX · {new Date().getFullYear()}
       </div>
 
       <a
@@ -56,7 +27,7 @@ export const Footer: React.FC<FooterProps> = ({
         rel="noreferrer"
         className="font-mono text-[11px] uppercase tracking-wider text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none"
       >
-        Designed and developed by Matt Downey
+        Designed and developed by MD Dev
       </a>
     </footer>
   );

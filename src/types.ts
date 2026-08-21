@@ -16,7 +16,7 @@ export interface Recipe {
   difficulty?: 'trivial' | 'medium' | 'high';
 }
 
-export type NavigationTab = 'my-box' | 'search' | 'upload' | 'login' | 'faq' | 'terms' | 'privacy';
+export type NavigationTab = 'my-box' | 'search' | 'upload' | 'login';
 
 export type FilterCategory = 'ALL' | 'MY_UPLOADS' | 'QUICK_FIXES' | 'SAVED';
 

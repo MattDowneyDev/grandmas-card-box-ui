@@ -38,16 +38,16 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
     <div
       id={cardId}
       onClick={() => onSelectRecipe(recipe)}
-      className={`cursor-pointer transition-all duration-150 flex flex-col justify-between border ${
+      className={`cursor-pointer transition-all duration-300 flex flex-col justify-between rounded-3xl border shadow-lg shadow-[#573a23]/5 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#573a23]/15 ${
         isDark
-          ? "bg-[#050b14] border-[#1e3a8a] hover:border-[#3b82f6] text-[#dde1ff]"
-          : "bg-[#fcf9f8] border-[#001255] hover:bg-white text-[#1b1c1c] brutalist-shadow"
-      } p-5 h-[500px] overflow-hidden group brutalist-shadow-interactive`}
+          ? "bg-[#050b14] border-[#5f503b] hover:border-[#8d7548] text-[#dde1ff]"
+          : "bg-[#fffaf2] border-[#eadfce] hover:bg-white text-[#332c24]"
+      } p-5 h-[500px] overflow-hidden group`}
     >
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3
-            className={`text-xl font-bold font-heading uppercase tracking-tight line-clamp-2 ${
+            className={`text-2xl font-bold font-heading leading-tight line-clamp-2 ${
               isDark ? "text-[#3b82f6]" : "text-[#001255]"
             }`}
           >
@@ -61,14 +61,14 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
                 event.stopPropagation();
                 onToggleMyBox(recipe.id);
               }}
-              className={`p-1.5 transition-none border ${
+              className={`p-2 rounded-full transition ${
                 isSaved
                   ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
+                    ? "bg-[#6f3f27] text-white border-[#6f3f27]"
+                    : "bg-[#6f3f27] text-white border-[#6f3f27]"
                   : isDark
-                    ? "border-[#1e3a8a] text-[#9ca3af] hover:text-white"
-                    : "border-[#001255] text-[#5f5e5a] hover:text-[#001255]"
+                    ? "border-[#5f503b] text-[#cfc3ad] hover:text-white"
+                    : "border-[#eadfce] text-[#766957] hover:text-[#6f3f27]"
               }`}
               title={isSaved ? "In your box" : "Add to your box"}
             >
@@ -96,7 +96,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         )}
 
         <div
-          className={`space-y-1.5 font-mono text-xs mb-4 ${isDark ? "text-[#93c5fd]" : "text-[#5f5e5a]"}`}
+          className={`space-y-1.5 font-mono text-xs mb-4 ${isDark ? "text-[#cfc3ad]" : "text-[#766957]"}`}
         >
           <div className="flex items-center gap-2">
             <Utensils className="w-3.5 h-3.5 opacity-70 shrink-0" />
@@ -118,7 +118,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         </div>
 
         <div
-          className={`text-xs font-mono border-t pt-2.5 mb-3 line-clamp-2 ${isDark ? "border-[#1e3a8a]/60 text-gray-400" : "border-[#001255]/20 text-gray-600"}`}
+          className={`text-sm leading-relaxed border-t pt-3 mb-3 line-clamp-2 ${isDark ? "border-[#5f503b] text-[#cfc3ad]" : "border-[#eadfce] text-[#766957]"}`}
         >
           {recipe.ingredients.slice(0, 3).join(", ")}
           {recipe.ingredients.length > 3 && "..."}
@@ -126,12 +126,12 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
       </div>
 
       <div
-        className={`pt-3 border-t flex items-center justify-between font-mono text-xs ${isDark ? "border-[#1e3a8a]" : "border-[#001255]"}`}
+        className={`pt-3 border-t flex items-center justify-between font-mono text-xs ${isDark ? "border-[#5f503b]" : "border-[#eadfce]"}`}
       >
         <div className="flex items-center gap-2">
           <button
             onClick={(event) => onCopyQuickData(event, recipe)}
-            className={`px-2 py-1 text-[11px] border transition-none flex items-center gap-1 ${isDark ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a] hover:text-white" : "border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white"}`}
+            className={`px-3 py-2 rounded-full text-[11px] transition flex items-center gap-1 ${isDark ? "text-[#cfc3ad] hover:bg-white/10" : "text-[#766957] hover:bg-black/5"}`}
             title="Copy zero-backstory text data"
           >
             {copiedId === recipe.id ? (
@@ -152,7 +152,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               event.stopPropagation();
               onSelectRecipe(recipe);
             }}
-            className={`px-2 py-1 text-[11px] font-bold border transition-none flex items-center gap-1 ${isDark ? "bg-[#1e3a8a] text-white border-[#3b82f6] hover:bg-[#2563eb]" : "bg-[#001255] text-white border-[#001255] hover:bg-[#1a2a6c]"}`}
+            className={`px-4 py-2 rounded-full text-[11px] font-bold transition flex items-center gap-1 ${isDark ? "bg-[#f5cc75] text-[#332c24] hover:bg-[#e4bf67]" : "bg-[#6f3f27] text-white hover:bg-[#a84b2a]"}`}
           >
             <Eye className="w-3 h-3" />
             <span>VIEW</span>

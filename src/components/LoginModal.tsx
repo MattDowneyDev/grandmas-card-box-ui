@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ThemeMode } from "../types";
-import { X, Key, UserCheck, ShieldCheck } from "lucide-react";
+import { ChefHat, X, UserCheck } from "lucide-react";
 import { AuthSession } from "../api/auth";
 
 interface LoginModalProps {
@@ -110,6 +110,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
       <div
+        id="auth-modal"
         className={`relative w-full max-w-md border p-6 md:p-8 font-mono ${
           isDark
             ? "bg-[#050b14] border-[#1e3a8a] text-white"
@@ -118,9 +119,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       >
         <div className="flex items-center justify-between border-b pb-3 mb-6 border-current">
           <div className="flex items-center gap-2">
-            <Key className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold uppercase font-heading tracking-tight">
-              LOG IN / OUT
+            <span className="auth-modal-icon">
+              <ChefHat className="h-5 w-5" />
+            </span>
+            <h2 className="text-xl font-bold font-heading tracking-tight">
+              {isLoggedIn
+                ? "Your account"
+                : isForgotPassword
+                  ? "Reset your password"
+                  : isSignup
+                    ? "Create your account"
+                    : "Welcome back"}
             </h2>
           </div>
           <button

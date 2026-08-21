@@ -20,12 +20,11 @@ import {
   getRecipes,
   setRecipeFavorite,
 } from "./api/recipes";
-import { Sidebar } from "./components/Sidebar";
+import { Header } from "./components/Header";
 import { CardBoxView } from "./components/CardBoxView";
 import { UploadView } from "./components/UploadView";
 import { SearchView } from "./components/SearchView";
 import { RecipeModal } from "./components/RecipeModal";
-import { FAQModal } from "./components/FAQModal";
 import { LoginModal } from "./components/LoginModal";
 import { PasswordResetView } from "./components/PasswordResetView";
 import { Footer } from "./components/Footer";
@@ -94,7 +93,7 @@ export default function App() {
         return savedTheme;
       }
     } catch (e) {}
-    return "dark"; // Starting with dark matches the primary Card Box screenshot (Image 5)
+    return "light";
   });
 
   // Active navigation tab
@@ -146,12 +145,6 @@ export default function App() {
   // Currently inspected recipe for detail modal
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
-  // Modals
-  const [faqModalType, setFaqModalType] = useState<
-    "faq" | "privacy" | "terms" | null
-  >(null);
-
-  // Persist recipes
   useEffect(() => {
     try {
       localStorage.setItem("cardbox_recipes", JSON.stringify(recipes));
@@ -168,12 +161,12 @@ export default function App() {
 
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
-      document.body.style.backgroundColor = "#030712";
-      document.body.style.color = "#dde1ff";
+      document.body.style.backgroundColor = "#2f2a24";
+      document.body.style.color = "#f7f1e7";
     } else {
       document.documentElement.classList.remove("dark");
-      document.body.style.backgroundColor = "#dcd9d9";
-      document.body.style.color = "#1b1c1c";
+      document.body.style.backgroundColor = "#f7f1e7";
+      document.body.style.color = "#332c24";
     }
   }, [theme]);
 
@@ -218,7 +211,6 @@ export default function App() {
       setIsLoginOpen(true);
       return;
     }
-
     createRecipe(newRecipeData, authToken || undefined)
       .then((newRecipe) => {
         setRecipes((prev) => [newRecipe, ...prev]);
@@ -292,12 +284,12 @@ export default function App() {
     <div
       className={`min-h-screen flex flex-col transition-colors duration-150 ${
         theme === "dark"
-          ? "bg-[#030712] text-[#dde1ff]"
-          : "bg-[#dcd9d9] text-[#1b1c1c]"
+          ? "bg-[#2f2a24] text-[#f7f1e7]"
+          : "bg-[#f7f1e7] text-[#332c24]"
       }`}
     >
       {/* Navigation Sidebar & Header */}
-      <Sidebar
+      <Header
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         myBoxCount={myBoxCount}
@@ -306,11 +298,10 @@ export default function App() {
         isLoggedIn={isLoggedIn}
         userHandle={userHandle}
         onOpenLogin={() => setIsLoginOpen(true)}
-        onOpenFAQ={() => setFaqModalType("faq")}
       />
 
       {/* Main Content Area (Offset by desktop sidebar md:ml-64) */}
-      <main className="flex-1 md:ml-64 flex flex-col">
+      <main className="app-main flex min-w-0 flex-1 flex-col">
         <div className="flex-1">
           {activeTab === "my-box" && (
             <CardBoxView
@@ -324,11 +315,7 @@ export default function App() {
           )}
 
           {activeTab === "upload" && (
-            <UploadView
-              theme={theme}
-              onSaveRecipe={handleSaveRecipe}
-              onViewRecipe={(recipe) => setSelectedRecipe(recipe)}
-            />
+            <UploadView theme={theme} onSaveRecipe={handleSaveRecipe} />
           )}
 
           {activeTab === "search" && (
@@ -342,12 +329,7 @@ export default function App() {
         </div>
 
         {/* Footer */}
-        <Footer
-          theme={theme}
-          onOpenPrivacy={() => setFaqModalType("privacy")}
-          onOpenTerms={() => setFaqModalType("terms")}
-          onOpenFAQ={() => setFaqModalType("faq")}
-        />
+        <Footer theme={theme} />
       </main>
 
       {/* Recipe Details 3x5 Modal */}
@@ -358,15 +340,6 @@ export default function App() {
           onClose={() => setSelectedRecipe(null)}
           onToggleMyBox={handleToggleMyBox}
           onDeleteRecipe={isLoggedIn ? handleDeleteRecipe : undefined}
-        />
-      )}
-
-      {/* FAQ, Privacy, Terms Modal */}
-      {faqModalType && (
-        <FAQModal
-          type={faqModalType}
-          theme={theme}
-          onClose={() => setFaqModalType(null)}
         />
       )}
 

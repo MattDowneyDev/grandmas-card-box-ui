@@ -1,497 +1,280 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
+import { AlertCircle, Camera, Check, Plus, Trash2 } from "lucide-react";
 import { Recipe, ThemeMode } from "../types";
-import {
-  Camera,
-  AlertTriangle,
-  Check,
-  Upload,
-  Image as ImageIcon,
-  X,
-} from "lucide-react";
 
-interface UploadViewProps {
+interface Props {
   theme: ThemeMode;
   onSaveRecipe: (
-    newRecipe: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
+    recipe: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => void;
-  onViewRecipe: (recipe: Recipe) => void;
 }
-
-export const UploadView: React.FC<UploadViewProps> = ({
-  theme,
-  onSaveRecipe,
-}) => {
-  const isDark = theme === "dark";
-
-  const [recipeName, setRecipeName] = useState("");
-  const [ingredients, setIngredients] = useState<string[]>(Array(10).fill(""));
-  const [steps, setSteps] = useState<string[]>(Array(10).fill(""));
-  const [cookTime, setCookTime] = useState<number | "">("");
-  const [prepTime, setPrepTime] = useState<number | "">("");
+export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
+  const [title, setTitle] = useState("");
+  const [tag, setTag] = useState("");
   const [servings, setServings] = useState<number | "">("");
-  const [tag, setTag] = useState<string>("");
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [warningNote, setWarningNote] = useState<string>("");
-  const [notification, setNotification] = useState<string | null>(null);
+  const [prep, setPrep] = useState<number | "">("");
+  const [cook, setCook] = useState<number | "">("");
+  const [ingredients, setIngredients] = useState([""]);
+  const [instructions, setInstructions] = useState([""]);
+  const [imageUrl, setImageUrl] = useState("");
+  const [notice, setNotice] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
+  const addLine = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
+    setter((lines) => [...lines, ""]);
+  const updateLine = (
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    index: number,
+    value: string,
+  ) =>
+    setter((lines) =>
+      lines.map((line, lineIndex) => (lineIndex === index ? value : line)),
+    );
+  const removeLine = (
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    index: number,
+  ) =>
+    setter((lines) =>
+      lines.length > 1
+        ? lines.filter((_, lineIndex) => lineIndex !== index)
+        : lines,
+    );
+  const submit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const missingField = !title.trim()
+      ? "recipe name"
+      : !tag
+        ? "category"
+        : !servings
+          ? "servings"
+          : !prep && prep !== 0
+            ? "prep minutes"
+            : !cook
+              ? "cook minutes"
+              : !ingredients.some((line) => line.trim())
+                ? "at least one ingredient"
+                : !instructions.some((line) => line.trim())
+                  ? "at least one instruction"
+                  : "";
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleStepChange = (index: number, value: string) => {
-    const updated = [...steps];
-    updated[index] = value;
-    setSteps(updated);
-  };
-
-  const handleIngredientChange = (index: number, value: string) => {
-    const updated = [...ingredients];
-    updated[index] = value;
-    setIngredients(updated);
-  };
-
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImageUrl(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+    if (missingField) {
+      setValidationMessage(
+        `Please add ${missingField} before saving this recipe.`,
+      );
+      return;
     }
-  };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const cleanTitle = recipeName.trim()
-      ? recipeName.trim().toUpperCase()
-      : "UNTITLED DATA";
-    const cleanIngredients = ingredients
-      .map((ingredient) => ingredient.trim())
-      .filter((i) => i.length > 0);
-
-    const cleanInstructions = steps
-      .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-
-    const prepTimeMin = prepTime === "" ? 0 : prepTime;
-    const cookTimeMin = cookTime === "" ? 0 : cookTime;
-
+    setValidationMessage("");
+    const prepTime = Number(prep) || 0;
+    const cookTime = Number(cook) || 0;
+    const cleanTitle = title.trim().toUpperCase() || "UNTITLED RECIPE";
     onSaveRecipe({
       title: cleanTitle,
-      ingredients: cleanIngredients,
-      instructions: cleanInstructions,
-      prepTimeMin,
-      cookTimeMin,
-      totalTimeMin: prepTimeMin + cookTimeMin,
-      servings: servings === "" ? 0 : servings,
       tag: tag || "Uncategorized",
+      servings: Number(servings) || 1,
+      prepTimeMin: prepTime,
+      cookTimeMin: cookTime,
+      totalTimeMin: prepTime + cookTime,
+      ingredients: ingredients.map((line) => line.trim()).filter(Boolean),
+      instructions: instructions.map((line) => line.trim()).filter(Boolean),
       imageUrl: imageUrl || undefined,
-      warningNote: warningNote.trim() || undefined,
       inMyBox: true,
     });
-
-    setNotification(`RECIPE "${cleanTitle}" FILED TO YOUR BOX.`);
-    setTimeout(() => setNotification(null), 3500);
-
-    // Reset form
-    setRecipeName("");
-    setIngredients(Array(10).fill(""));
-    setSteps(Array(10).fill(""));
-    setImageUrl("");
-    setPrepTime("");
-    setServings("");
-    setCookTime("");
+    setNotice(`${cleanTitle} was added to your box.`);
+    setTitle("");
     setTag("");
-    setWarningNote("");
+    setServings("");
+    setPrep("");
+    setCook("");
+    setIngredients([""]);
+    setInstructions([""]);
+    setImageUrl("");
+    setTimeout(() => setNotice(""), 3500);
   };
-
+  const readImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setImageUrl(String(reader.result));
+    reader.readAsDataURL(file);
+  };
   return (
-    <div className="w-full max-w-4xl mx-auto px-4 md:px-8 py-8 flex flex-col items-center">
-      {/* Header Section from Image 7 */}
-      <div className="text-center mb-10 w-full max-w-2xl">
-        <h1
-          id="upload-main-title"
-          className={`text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading uppercase pb-4 mb-3 border-b-2 ${
-            isDark
-              ? "text-[#3b82f6] border-[#1e3a8a]"
-              : "text-[#001255] border-[#001255]"
-          }`}
-        >
-          DONATE TO THE BOX.
-        </h1>
-        <p
-          className={`text-sm md:text-base font-mono ${
-            isDark ? "text-[#9ca3af]" : "text-[#5f5e5a]"
-          }`}
-        >
-          Keep it brief. We don't care how your cat feels about this dish.
-        </p>
-      </div>
-
-      {/* Notification Toast */}
-      {notification && (
-        <div className="mb-6 w-full max-w-3xl p-3 bg-[#001255] text-white font-mono text-xs flex items-center gap-2 brutalist-shadow">
-          <Check className="w-4 h-4 text-green-400 shrink-0" />
-          <span>{notification}</span>
+    <div className={`modern-page ${theme === "dark" ? "is-dark" : ""}`}>
+      <section className="modern-section-intro">
+        <div>
+          <span className="eyebrow accent-eyebrow">Add to the collection</span>
+          <h1>Share a recipe</h1>
+          <p>Keep the story if you want. The useful bits come first.</p>
+        </div>
+      </section>
+      {notice && (
+        <div className="modern-notice">
+          <Check /> {notice}
         </div>
       )}
-
-      {/* The Index Card Form matching Image 7 */}
-      <form
-        onSubmit={handleSubmit}
-        id="recipe-donation-form"
-        className={`w-full max-w-3xl border p-6 md:p-12 relative ${
-          isDark
-            ? "bg-[#050b14] border-[#1e3a8a] text-white"
-            : "bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow"
-        }`}
-      >
-        {/* Recipe Name */}
-        <div className="mb-8">
-          <label
-            htmlFor="recipeName"
-            className={`block text-xs font-mono font-bold tracking-widest uppercase mb-2 ${
-              isDark ? "text-[#60a5fa]" : "text-[#001255]"
-            }`}
-          >
-            RECIPE NAME
-          </label>
-          <input
-            id="recipeName"
-            type="text"
-            required
-            value={recipeName}
-            onChange={(e) => setRecipeName(e.target.value)}
-            placeholder="e.g. BITCHIN' BEEF STEW"
-            className={`w-full bg-transparent border-0 border-b py-2 px-0 text-xl md:text-2xl font-bold font-heading uppercase tracking-tight focus:ring-0 ${
-              isDark
-                ? "border-[#1e3a8a] brutalist-input-dark text-white placeholder-gray-600"
-                : "border-[#001255] brutalist-input text-[#001255] placeholder-[#5f5e5a]/50"
-            }`}
-          />
+      {validationMessage && (
+        <div className="modern-notice modern-notice-error" role="alert">
+          <AlertCircle /> {validationMessage}
         </div>
-
-        {/* Recipe Meta Options: Tag, Prep Time & Cook Time */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 font-mono text-xs">
-          <div>
-            <label
-              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-            >
-              SERVINGS
-            </label>
-            <input
-              type="number"
-              required
-              min={1}
-              max={100}
-              value={servings}
-              onChange={(e) =>
-                setServings(
-                  e.target.value === "" ? "" : parseInt(e.target.value),
-                )
-              }
-              placeholder="e.g. 4"
-              className={`w-full p-2 border font-mono text-xs ${
-                isDark
-                  ? "bg-[#030712] border-[#1e3a8a] text-white"
-                  : "bg-white border-[#001255] text-[#001255]"
-              }`}
-            />
-          </div>
-
-          <div>
-            <label
-              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-            >
-              CATEGORY / TAG
-            </label>
+      )}
+      <form className="modern-form" onSubmit={submit} noValidate>
+        <label className="field-wide">
+          Recipe name
+          <input
+            required
+            value={title}
+            onChange={(event) => setTitle(event.target.value)}
+            placeholder="Sunday morning pancakes"
+          />
+        </label>
+        <div className="field-grid">
+          <label>
+            Category
             <select
               required
               value={tag}
-              onChange={(e) => setTag(e.target.value)}
-              className={`w-full p-2 border font-mono text-xs uppercase ${
-                isDark
-                  ? "bg-[#030712] border-[#1e3a8a] text-white"
-                  : "bg-white border-[#001255] text-[#001255]"
-              }`}
+              onChange={(event) => setTag(event.target.value)}
             >
-              <option value="" disabled>
-                Select a category
-              </option>
-              <option value="Dinner">Dinner</option>
-              <option value="Quick Fix">Quick Fix (&lt; 15 min)</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Late Night">Late Night</option>
-              <option value="Breakfast">Breakfast</option>
-              <option value="Staple">Staple</option>
+              <option value="">Choose one</option>
+              <option>Dinner</option>
+              <option>Quick Fix</option>
+              <option>Lunch</option>
+              <option>Late Night</option>
+              <option>Breakfast</option>
+              <option>Staple</option>
             </select>
-          </div>
-
-          <div>
-            <label
-              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-            >
-              PREP TIME (MINUTES)
-            </label>
+          </label>
+          <label>
+            Servings
             <input
-              type="number"
               required
-              min={0}
-              max={480}
-              value={prepTime}
-              onChange={(e) =>
-                setPrepTime(
-                  e.target.value === "" ? "" : parseInt(e.target.value),
+              type="number"
+              min="1"
+              value={servings}
+              onChange={(event) =>
+                setServings(
+                  event.target.value ? Number(event.target.value) : "",
                 )
               }
-              placeholder="e.g. 10"
-              className={`w-full p-2 border font-mono text-xs ${
-                isDark
-                  ? "bg-[#030712] border-[#1e3a8a] text-white"
-                  : "bg-white border-[#001255] text-[#001255]"
-              }`}
             />
-          </div>
-
-          <div>
-            <label
-              className={`block font-bold uppercase tracking-wider mb-1 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-            >
-              COOK TIME (MINUTES)
-            </label>
+          </label>
+          <label>
+            Prep minutes
             <input
-              type="number"
               required
-              min={1}
-              max={480}
-              value={cookTime}
-              onChange={(e) =>
-                setCookTime(
-                  e.target.value === "" ? "" : parseInt(e.target.value),
-                )
+              type="number"
+              min="0"
+              value={prep}
+              onChange={(event) =>
+                setPrep(event.target.value ? Number(event.target.value) : "")
               }
-              placeholder="e.g. 25"
-              className={`w-full p-2 border font-mono text-xs ${
-                isDark
-                  ? "bg-[#030712] border-[#1e3a8a] text-white"
-                  : "bg-white border-[#001255] text-[#001255]"
-              }`}
             />
-          </div>
+          </label>
+          <label>
+            Cook minutes
+            <input
+              required
+              type="number"
+              min="1"
+              value={cook}
+              onChange={(event) =>
+                setCook(event.target.value ? Number(event.target.value) : "")
+              }
+            />
+          </label>
         </div>
-
-        {/* Horizontal Rule Divider */}
-        <div
-          className={`w-full h-px mb-8 opacity-30 ${
-            isDark ? "bg-[#3b82f6]" : "bg-[#001255]"
-          }`}
-        />
-
-        {/* Two-Column Grid: Ingredients & Instructions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          {/* Ingredients Column */}
-          <div>
-            <div
-              className={`flex h-7 items-start border-b pb-2 mb-4 ${
-                isDark ? "border-[#1e3a8a]" : "border-[#001255]"
-              }`}
-            >
-              <label
-                htmlFor="ingredients"
-                className={`text-xs font-mono font-bold uppercase tracking-wider ${
-                  isDark ? "text-[#60a5fa]" : "text-[#001255]"
-                }`}
-              >
-                INGREDIENTS
-              </label>
-            </div>
-
-            <ol className="list-none space-y-3 font-mono text-sm">
-              {ingredients.map((ingredient, idx) => (
-                <li
-                  key={idx}
-                  className={`flex items-baseline border-b pb-1 ${
-                    isDark ? "border-[#1e3a8a]/40" : "border-[#001255]/30"
-                  }`}
-                >
-                  <span
-                    className={`font-bold mr-2 text-xs w-5 shrink-0 ${
-                      isDark ? "text-[#60a5fa]" : "text-[#001255]"
-                    }`}
-                  >
-                    {idx + 1}.
-                  </span>
-                  <input
-                    type="text"
-                    required={idx === 0}
-                    value={ingredient}
-                    onChange={(e) =>
-                      handleIngredientChange(idx, e.target.value)
-                    }
-                    placeholder={idx === 0 ? "e.g. 1 lb beef" : ""}
-                    className={`w-full bg-transparent border-none p-0 focus:ring-0 focus:outline-none font-mono text-xs sm:text-sm ${
-                      isDark
-                        ? "text-white placeholder-gray-700"
-                        : "text-[#1b1c1c] placeholder-gray-400"
-                    }`}
-                  />
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Steps Column (10 Numbered Lines) */}
-          <div>
-            <div
-              className={`flex h-7 items-start border-b pb-2 mb-4 ${
-                isDark ? "border-[#1e3a8a]" : "border-[#001255]"
-              }`}
-            >
-              <label
-                className={`text-xs font-mono font-bold uppercase tracking-wider ${
-                  isDark ? "text-[#60a5fa]" : "text-[#001255]"
-                }`}
-              >
-                INSTRUCTIONS
-              </label>
-            </div>
-
-            <ol className="list-none space-y-3 font-mono text-sm">
-              {steps.map((step, idx) => (
-                <li
-                  key={idx}
-                  className={`flex items-baseline border-b pb-1 ${
-                    isDark ? "border-[#1e3a8a]/40" : "border-[#001255]/30"
-                  }`}
-                >
-                  <span
-                    className={`font-bold mr-2 text-xs w-5 shrink-0 ${
-                      isDark ? "text-[#60a5fa]" : "text-[#001255]"
-                    }`}
-                  >
-                    {idx + 1}.
-                  </span>
-                  <input
-                    type="text"
-                    required={idx === 0}
-                    value={step}
-                    onChange={(e) => handleStepChange(idx, e.target.value)}
-                    placeholder={idx === 0 ? "e.g. Chop everything." : ""}
-                    className={`w-full bg-transparent border-none p-0 focus:ring-0 focus:outline-none font-mono text-xs sm:text-sm ${
-                      isDark
-                        ? "text-white placeholder-gray-700"
-                        : "text-[#1b1c1c] placeholder-gray-400"
-                    }`}
-                  />
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-
-        {/* Photo Attachment Section */}
-        <div className="mt-8 pt-6 border-t border-current/20">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
-            <label
-              className={`text-xs font-mono font-bold uppercase tracking-wider ${isDark ? "text-[#60a5fa]" : "text-[#001255]"}`}
-            >
-              PHOTO (HIGHLY ENCOURAGED)
-            </label>
-            {imageUrl && (
-              <button
-                type="button"
-                onClick={() => setImageUrl("")}
-                className="text-[11px] font-mono text-red-600 hover:underline"
-              >
-                REMOVE PHOTO
-              </button>
-            )}
-          </div>
-
-          {imageUrl ? (
-            <div className="relative w-full h-40 border border-current/30 overflow-hidden bg-black/10 mb-4">
-              <img
-                src={imageUrl}
-                alt="Preview"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          ) : (
-            <div className="mb-4 text-xs font-mono opacity-70">
-              You know no one will ever try your recipe if you don't include a
-              photo.
-            </div>
-          )}
-
-          <button
-            type="button"
-            id="btn-attach-photo"
-            onClick={() => fileInputRef.current?.click()}
-            className={`group flex items-center gap-2 border px-4 py-2 transition-none h-10 justify-center ${
-              isDark
-                ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#1e3a8a] hover:text-white"
-                : "border-[#001255] text-[#001255] hover:bg-[#001255] hover:text-white"
-            }`}
-          >
-            <Camera className="w-4 h-4 shrink-0" />
-            <span className="font-mono text-xs font-bold uppercase tracking-wider">
-              {imageUrl ? "CHANGE PHOTO" : "ATTACH PHOTO"}
-            </span>
-          </button>
-
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            className="hidden"
+        <div className="form-columns">
+          <LineEditor
+            label="Ingredients"
+            lines={ingredients}
+            setter={setIngredients}
+            update={updateLine}
+            remove={removeLine}
+            add={addLine}
+            placeholder="1 cup flour"
+          />
+          <LineEditor
+            label="Instructions"
+            lines={instructions}
+            setter={setInstructions}
+            update={updateLine}
+            remove={removeLine}
+            add={addLine}
+            placeholder="Mix everything together"
           />
         </div>
-
-        {/* Horizontal Rule Divider */}
-        <div
-          className={`w-full h-px my-8 opacity-30 ${
-            isDark ? "bg-[#3b82f6]" : "bg-[#001255]"
-          }`}
-        />
-
-        {/* Sarcastic Warning Callout matching Image 7 */}
-        <div
-          id="sarcastic-warning-callout"
-          className={`mt-8 w-full border-2 p-4 font-mono text-xs text-left ${
-            isDark
-              ? "border-red-500/80 text-red-400 bg-red-950/20"
-              : "border-[#ba1a1a] text-[#ba1a1a] bg-red-50/50"
-          }`}
-        >
-          <div className="flex items-start justify-start gap-2">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-red-500" />
-            <input
-              type="text"
-              value={warningNote}
-              onChange={(e) => setWarningNote(e.target.value)}
-              placeholder="Add a warning, or just let folks crash and burn. Up to you."
-              className="w-full bg-transparent border-0 p-0 text-left font-bold text-xs focus:ring-0"
-            />
-          </div>
+        <div className="photo-upload">
+          {imageUrl ? (
+            <img src={imageUrl} alt="Recipe preview" />
+          ) : (
+            <div>
+              <Camera />
+              <strong>Add a photo</strong>
+              <span>A good photo makes a recipe easier to find later.</span>
+            </div>
+          )}
+          <label className="modern-button secondary">
+            <Camera /> {imageUrl ? "Change photo" : "Choose photo"}
+            <input type="file" accept="image/*" onChange={readImage} />
+          </label>
         </div>
-
-        <div className="mt-8 flex justify-end">
-          <button
-            type="submit"
-            id="btn-file-recipe"
-            className={`px-8 py-3 font-mono text-xs font-bold uppercase tracking-widest transition-none h-12 w-full sm:w-auto ${
-              isDark
-                ? "bg-[#1e3a8a] text-white border border-[#3b82f6] hover:bg-[#2563eb] brutalist-shadow-blue brutalist-shadow-blue-interactive"
-                : "bg-[#fcf9f8] text-[#001255] border border-[#001255] hover:bg-[#f0eded] brutalist-shadow brutalist-shadow-interactive"
-            }`}
-          >
-            FILE RECIPE
-          </button>
-        </div>
+        <button className="modern-button submit-button" type="submit">
+          <Plus /> Save recipe
+        </button>
       </form>
     </div>
   );
 };
+
+function LineEditor({
+  label,
+  lines,
+  setter,
+  update,
+  remove,
+  add,
+  placeholder,
+}: {
+  label: string;
+  lines: string[];
+  setter: React.Dispatch<React.SetStateAction<string[]>>;
+  update: (
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    index: number,
+    value: string,
+  ) => void;
+  remove: (
+    setter: React.Dispatch<React.SetStateAction<string[]>>,
+    index: number,
+  ) => void;
+  add: (setter: React.Dispatch<React.SetStateAction<string[]>>) => void;
+  placeholder: string;
+}) {
+  return (
+    <section className="line-editor">
+      <div className="editor-heading">
+        <h2>{label}</h2>
+        <button type="button" onClick={() => add(setter)}>
+          <Plus /> Add line
+        </button>
+      </div>
+      {lines.map((line, index) => (
+        <div className="editor-line" key={index}>
+          <span>{index + 1}</span>
+          <input
+            required={index === 0}
+            value={line}
+            onChange={(event) => update(setter, index, event.target.value)}
+            placeholder={placeholder}
+          />
+          <button
+            type="button"
+            onClick={() => remove(setter, index)}
+            aria-label={`Remove ${label} line`}
+          >
+            <Trash2 />
+          </button>
+        </div>
+      ))}
+    </section>
+  );
+}

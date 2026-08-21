@@ -1,215 +1,168 @@
 import React, { useState } from "react";
-import { Recipe, ThemeMode } from "../types";
 import { Search as SearchIcon, X } from "lucide-react";
+import { Recipe, ThemeMode } from "../types";
 import { RecipeCard } from "./RecipeCard";
 
-interface SearchViewProps {
+interface Props {
   recipes: Recipe[];
   theme: ThemeMode;
   onSelectRecipe: (recipe: Recipe) => void;
   onToggleMyBox: (recipeId: string) => void;
 }
 
-export const SearchView: React.FC<SearchViewProps> = ({
+export const SearchView: React.FC<Props> = ({
   recipes,
   theme,
   onSelectRecipe,
   onToggleMyBox,
 }) => {
-  const isDark = theme === "dark";
-
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTag, setSelectedTag] = useState<string>("ALL");
-  const [maxTotalTime, setMaxTotalTime] = useState<number>(480);
-  const [maxIngredients, setMaxIngredients] = useState<number>(10);
+  const dark = theme === "dark";
+  const [query, setQuery] = useState("");
+  const [tag, setTag] = useState("ALL");
+  const [maxTime, setMaxTime] = useState(480);
+  const [maxIngredients, setMaxIngredients] = useState(10);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const filtered = recipes.filter((r) => {
-    const query = searchQuery.toLowerCase().trim();
+  const filtered = recipes.filter((recipe) => {
+    const search = query.trim().toLowerCase();
     const matchesQuery =
-      !query ||
-      r.title.toLowerCase().includes(query) ||
-      r.id.toLowerCase().includes(query) ||
-      r.ingredients.some((ing) => ing.toLowerCase().includes(query)) ||
-      r.instructions.some((step) => step.toLowerCase().includes(query));
-
-    const matchesTag =
-      selectedTag === "ALL" ||
-      r.tag.toLowerCase() === selectedTag.toLowerCase();
-    const totalTime = r.totalTimeMin ?? (r.prepTimeMin || 0) + r.cookTimeMin;
-    const matchesTotalTime = totalTime <= maxTotalTime;
-    const matchesIngredients = r.ingredients.length <= maxIngredients;
-
-    return matchesQuery && matchesTag && matchesTotalTime && matchesIngredients;
+      !search ||
+      [
+        recipe.title,
+        recipe.id,
+        ...recipe.ingredients,
+        ...recipe.instructions,
+      ].some((value) => value.toLowerCase().includes(search));
+    const total =
+      recipe.totalTimeMin ?? (recipe.prepTimeMin || 0) + recipe.cookTimeMin;
+    return (
+      matchesQuery &&
+      (tag === "ALL" || recipe.tag.toLowerCase() === tag.toLowerCase()) &&
+      total <= maxTime &&
+      recipe.ingredients.length <= maxIngredients
+    );
   });
 
-  const handleCopyQuickData = (e: React.MouseEvent, recipe: Recipe) => {
-    e.stopPropagation();
-    const textData = `=== ${recipe.title} (ID: ${recipe.id}) ===\nPREP TIME: ${recipe.prepTimeMin || 0} MIN | COOK TIME: ${recipe.cookTimeMin} MIN | TOTAL TIME: ${recipe.totalTimeMin ?? (recipe.prepTimeMin || 0) + recipe.cookTimeMin} MIN | TAG: ${recipe.tag}\n\nINGREDIENTS:\n${recipe.ingredients.map((i) => `- ${i}`).join("\n")}\n\nINSTRUCTIONS:\n${recipe.instructions.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}\n\nNO BACKSTORY. JUST DATA.`;
-    navigator.clipboard.writeText(textData);
+  // ***** ADD THIS BACK IN LATER *****
+  // const clear = () => {
+  //   setQuery("");
+  //   setTag("ALL");
+  //   setMaxTime(480);
+  //   setMaxIngredients(10);
+  // };
+
+  const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
+    event.stopPropagation();
+    navigator.clipboard.writeText(
+      `${recipe.title}\n\nINGREDIENTS\n${recipe.ingredients.join("\n")}\n\nINSTRUCTIONS\n${recipe.instructions.join("\n")}`,
+    );
     setCopiedId(recipe.id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 1800);
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-8">
-      {/* Header */}
-      <div className="mb-8 border-b-2 pb-4 border-current">
-        <h1
-          id="search-header-title"
-          className={`text-3xl sm:text-4xl font-black font-heading tracking-tight uppercase ${
-            isDark ? "text-[#3b82f6]" : "text-[#001255]"
-          }`}
-        >
-          FIND RECIPES (WITHOUT THE BACKSTORY)
-        </h1>
-        <p
-          className={`text-xs font-mono tracking-widest mt-1 uppercase ${isDark ? "text-[#9ca3af]" : "text-[#5f5e5a]"}`}
-        >
-          SKIP THE 3,000 WORD ESSAY. JUST FIND THE FOOD.
-        </p>
-      </div>
+    <div className="modern-page">
+      <section className="modern-hero">
+        <img
+          src="/grandmascardboxhero.jpeg"
+          alt="A recipe box in a warm kitchen"
+        />
+        <div className="modern-hero-overlay" />
+        <div className="modern-hero-content">
+          <h1>
+            No backstories,
+            <br />
+            <em>just recipes.</em>
+          </h1>
+          <p>
+            Grandma didn't need someone's life story to make a great meal. She
+            just needed the ingredients.
+          </p>
+        </div>
+      </section>
 
-      {/* Main Search Bar */}
-      <div
-        className={`p-4 md:p-6 mb-8 border ${
-          isDark
-            ? "bg-[#050b14] border-[#1e3a8a]"
-            : "bg-[#fcf9f8] border-[#001255] brutalist-shadow"
-        }`}
-      >
-        <div className="relative flex items-center mb-4">
-          <SearchIcon
-            className={`absolute left-3 w-5 h-5 ${isDark ? "text-[#60a5fa]" : "text-[#001255]"}`}
-          />
+      <section className="modern-content-head">
+        <div>
+          <span className="eyebrow accent-eyebrow">The collection</span>
+          <h2>What are you hungry for?</h2>
+        </div>
+        <span className="result-count">{filtered.length} recipes</span>
+      </section>
+
+      <section className={`modern-search-panel ${dark ? "is-dark" : ""}`}>
+        <div className="modern-search-input">
+          <SearchIcon className="h-5 w-5" />
           <input
             id="search-query-input"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="TYPE RECIPE OR INGREDIENT NAME..."
-            className={`w-full pl-11 pr-10 py-3 font-mono text-sm md:text-base border uppercase tracking-wider focus:ring-0 ${
-              isDark
-                ? "bg-[#030712] border-[#1e3a8a] text-white placeholder-gray-600 focus:border-[#3b82f6]"
-                : "bg-white border-[#001255] text-[#001255] placeholder-[#5f5e5a]/60 focus:border-[#001255]"
-            }`}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Search recipes, ingredients, or instructions"
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery("")}
-              className="absolute right-3 p-1 text-gray-400 hover:text-current"
-            >
-              <X className="w-4 h-4" />
+          {query && (
+            <button onClick={() => setQuery("")} aria-label="Clear search">
+              <X className="h-4 w-4" />
             </button>
           )}
         </div>
-
-        {/* Parameter Sliders / Filters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-current/20 font-mono text-xs">
-          <div>
-            <label
-              className={`block font-bold uppercase mb-1.5 ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-            >
-              CATEGORY
-            </label>
+        <div className="modern-filters">
+          <label>
+            Category
             <select
-              value={selectedTag}
-              onChange={(e) => setSelectedTag(e.target.value)}
-              className={`w-full p-2 border font-mono text-xs uppercase ${
-                isDark
-                  ? "bg-[#030712] border-[#1e3a8a] text-white"
-                  : "bg-white border-[#001255] text-[#001255]"
-              }`}
+              value={tag}
+              onChange={(event) => setTag(event.target.value)}
             >
-              <option value="ALL">ALL TAGS</option>
-              <option value="Dinner">DINNER</option>
-              <option value="Quick Fix">QUICK FIX</option>
-              <option value="Lunch">LUNCH</option>
-              <option value="Late Night">LATE NIGHT</option>
-              <option value="Breakfast">BREAKFAST</option>
+              <option value="ALL">All categories</option>
+              <option value="Dinner">Dinner</option>
+              <option value="Quick Fix">Quick fix</option>
+              <option value="Lunch">Lunch</option>
+              <option value="Late Night">Late night</option>
+              <option value="Breakfast">Breakfast</option>
             </select>
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-1.5">
-              <span
-                className={`font-bold uppercase ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-              >
-                MAX TIME
-              </span>
-              <span className="font-bold">{maxTotalTime} MIN</span>
-            </div>
+          </label>
+          <label>
+            Max time <output>{maxTime} min</output>
             <input
               type="range"
-              min={15}
-              max={480}
-              step={15}
-              value={maxTotalTime}
-              onChange={(e) => setMaxTotalTime(parseInt(e.target.value))}
-              className="w-full accent-[#001255]"
+              min="15"
+              max="480"
+              step="15"
+              value={maxTime}
+              onChange={(event) => setMaxTime(Number(event.target.value))}
             />
-          </div>
-
-          <div>
-            <div className="flex justify-between mb-1.5">
-              <span
-                className={`font-bold uppercase ${isDark ? "text-[#93c5fd]" : "text-[#001255]"}`}
-              >
-                MAX INGREDIENTS
-              </span>
-              <span className="font-bold">{maxIngredients} ITEMS</span>
-            </div>
+          </label>
+          <label>
+            Ingredients <output>{maxIngredients} max</output>
             <input
               type="range"
-              min={2}
-              max={10}
+              min="2"
+              max="10"
               value={maxIngredients}
-              onChange={(e) => setMaxIngredients(parseInt(e.target.value))}
-              className="w-full accent-[#001255]"
+              onChange={(event) =>
+                setMaxIngredients(Number(event.target.value))
+              }
             />
-          </div>
+          </label>
+
+          {/* ***** ADD THIS BACK IN LATER ***** */}
+          {/* {(query || tag !== "ALL" || maxTime < 480 || maxIngredients < 10) && (
+            <button className="filter-reset" onClick={clear}>
+              Reset filters
+            </button>
+          )} */}
         </div>
-      </div>
+      </section>
 
-      {/* Results Banner */}
-      <div className="flex items-center justify-between font-mono text-xs uppercase mb-4 tracking-widest opacity-80">
-        <span>MATCHING DATA RECORDS: {filtered.length}</span>
-        {(searchQuery ||
-          selectedTag !== "ALL" ||
-          maxTotalTime < 480 ||
-          maxIngredients < 10) && (
-          <button
-            onClick={() => {
-              setSearchQuery("");
-              setSelectedTag("ALL");
-              setMaxTotalTime(480);
-              setMaxIngredients(10);
-            }}
-            className="text-red-500 hover:underline"
-          >
-            RESET QUERY
-          </button>
-        )}
-      </div>
-
-      {/* Results List / Grid */}
       {filtered.length === 0 ? (
-        <div
-          className={`p-12 text-center border-2 border-dashed ${
-            isDark
-              ? "border-[#1e3a8a] text-gray-400"
-              : "border-[#001255] text-[#5f5e5a]"
-          }`}
-        >
-          <div className="text-sm font-mono uppercase mb-2 font-bold">
-            NO DATA MATCHED YOUR EXACT QUERY.
-          </div>
-          <p className="text-xs font-mono opacity-80">
-            Try relaxing your total time or ingredient filters.
-          </p>
+        <div className="modern-empty">
+          <h3>Nothing matched that search</h3>
+          <p>Try a broader ingredient, category, or time range.</p>
+
+          {/* ***** ADD THIS BACK IN LATER ***** */}
+          {/* <button className="modern-button secondary" onClick={clear}>
+            Clear filters
+          </button> */}
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
+        <div className="modern-recipe-grid">
           {filtered.map((recipe) => (
             <RecipeCard
               key={recipe.id}
@@ -218,7 +171,7 @@ export const SearchView: React.FC<SearchViewProps> = ({
               copiedId={copiedId}
               onSelectRecipe={onSelectRecipe}
               onToggleMyBox={onToggleMyBox}
-              onCopyQuickData={handleCopyQuickData}
+              onCopyQuickData={copyRecipe}
             />
           ))}
         </div>

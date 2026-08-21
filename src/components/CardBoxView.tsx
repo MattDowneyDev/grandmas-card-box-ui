@@ -1,18 +1,18 @@
 import React, { useState } from "react";
-import { Recipe, FilterCategory, ThemeMode } from "../types";
-import { Search, Plus, Bookmark } from "lucide-react";
+import { Bookmark, Plus, Search } from "lucide-react";
+import { FilterCategory, Recipe, ThemeMode } from "../types";
 import { RecipeCard } from "./RecipeCard";
 
-interface CardBoxViewProps {
+interface Props {
   recipes: Recipe[];
   theme: ThemeMode;
   onSelectRecipe: (recipe: Recipe) => void;
-  onToggleMyBox: (recipeId: string) => void;
+  onToggleMyBox: (id: string) => void;
   onNavigateToSearch: () => void;
   onNavigateToUpload: () => void;
 }
 
-export const CardBoxView: React.FC<CardBoxViewProps> = ({
+export const CardBoxView: React.FC<Props> = ({
   recipes,
   theme,
   onSelectRecipe,
@@ -20,193 +20,99 @@ export const CardBoxView: React.FC<CardBoxViewProps> = ({
   onNavigateToSearch,
   onNavigateToUpload,
 }) => {
-  const [activeFilter, setActiveFilter] = useState<FilterCategory>("ALL");
+  const [filter, setFilter] = useState<FilterCategory>("ALL");
   const [copiedId, setCopiedId] = useState<string | null>(null);
-
-  const isDark = theme === "dark";
-
-  // Filter recipes according to active tab
-  const filteredRecipes = recipes.filter((r) => {
-    if (activeFilter === "ALL") return true;
-    if (activeFilter === "MY_UPLOADS") return r.isUserUpload;
-    if (activeFilter === "QUICK_FIXES")
-      return r.ingredients.length <= 4 || r.cookTimeMin <= 15;
-    if (activeFilter === "SAVED") return r.inMyBox;
-    return true;
-  });
-
-  const handleCopyQuickData = (e: React.MouseEvent, recipe: Recipe) => {
-    e.stopPropagation();
-    const textData = `=== ${recipe.title} (ID: ${recipe.id}) ===\nPREP TIME: ${recipe.prepTimeMin || 0} MIN | COOK TIME: ${recipe.cookTimeMin} MIN | TOTAL TIME: ${recipe.totalTimeMin ?? (recipe.prepTimeMin || 0) + recipe.cookTimeMin} MIN | TAG: ${recipe.tag}\n\nINGREDIENTS:\n${recipe.ingredients.map((i) => `- ${i}`).join("\n")}\n\nINSTRUCTIONS:\n${recipe.instructions.map((step, idx) => `${idx + 1}. ${step}`).join("\n")}\n\nNO BACKSTORY. JUST DATA.`;
-    navigator.clipboard.writeText(textData);
+  const filtered = recipes.filter(
+    (recipe) =>
+      filter === "ALL" ||
+      (filter === "MY_UPLOADS" && recipe.isUserUpload) ||
+      (filter === "QUICK_FIXES" &&
+        (recipe.ingredients.length <= 4 || recipe.cookTimeMin <= 15)) ||
+      (filter === "SAVED" && recipe.inMyBox),
+  );
+  const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
+    event.stopPropagation();
+    navigator.clipboard.writeText(
+      `${recipe.title}\n${recipe.ingredients.join("\n")}`,
+    );
     setCopiedId(recipe.id);
-    setTimeout(() => setCopiedId(null), 2000);
+    setTimeout(() => setCopiedId(null), 1800);
   };
-
+  const filters: { id: FilterCategory; label: string }[] = [
+    { id: "ALL", label: "Everything" },
+    { id: "SAVED", label: "Favorites" },
+    { id: "MY_UPLOADS", label: "My recipes" },
+    { id: "QUICK_FIXES", label: "Quick fixes" },
+  ];
   return (
-    <div className="w-full max-w-6xl mx-auto px-4 md:px-8 py-6">
-      {/* Top Header & Title */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b-2 pb-4 border-current">
-          <div>
-            <h1
-              id="card-box-main-title"
-              className={`text-3xl sm:text-4xl md:text-5xl font-black font-heading tracking-tight uppercase ${
-                isDark ? "text-[#3b82f6]" : "text-[#001255]"
-              }`}
-            >
-              MY CARD BOX
-            </h1>
-            <div
-              className={`text-xs font-mono tracking-widest mt-2 uppercase ${
-                isDark ? "text-[#9ca3af]" : "text-[#5f5e5a]"
-              }`}
-            >
-              INDEX: {recipes.length} ITEMS{" "}
-              {activeFilter !== "ALL" &&
-                `(FILTERED: ${filteredRecipes.length})`}
-            </div>
+    <div className="modern-page">
+      <section className="modern-section-intro">
+        <div>
+          <span className="eyebrow accent-eyebrow">Your personal shelf</span>
+          <h1>My card box</h1>
+          <p>Recipes you want close at hand, whenever dinner calls.</p>
+        </div>
+        <div className="modern-stat">
+          <strong>{recipes.length}</strong>
+          <span>saved cards</span>
+        </div>
+      </section>
+      <div className="modern-filter-row">
+        {filters.map(({ id, label }) => (
+          <button
+            key={id}
+            className={filter === id ? "active" : ""}
+            onClick={() => setFilter(id)}
+          >
+            {label}
+            <span>
+              {id === "SAVED"
+                ? recipes.filter((recipe) => recipe.inMyBox).length
+                : id === "MY_UPLOADS"
+                  ? recipes.filter((recipe) => recipe.isUserUpload).length
+                  : id === "ALL"
+                    ? recipes.length
+                    : filtered.length}
+            </span>
+          </button>
+        ))}
+      </div>
+      {filtered.length ? (
+        <div className="modern-recipe-grid">
+          {filtered.map((recipe) => (
+            <RecipeCard
+              key={recipe.id}
+              recipe={recipe}
+              theme={theme}
+              copiedId={copiedId}
+              onSelectRecipe={onSelectRecipe}
+              onToggleMyBox={onToggleMyBox}
+              onCopyQuickData={copyRecipe}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="modern-empty">
+          <div className="empty-icon">
+            <Bookmark />
           </div>
-
-          {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 font-mono text-xs">
-            <button
-              id="filter-all-cards"
-              onClick={() => setActiveFilter("ALL")}
-              className={`px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
-                activeFilter === "ALL"
-                  ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-                  : isDark
-                    ? "border-[#1e3a8a] text-[#9ca3af] hover:bg-[#111827] hover:text-white"
-                    : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-              }`}
-            >
-              ALL CARDS
+          <h3>Your box is waiting</h3>
+          <p>
+            Start building a collection of recipes you will actually make again.
+          </p>
+          <div className="empty-actions">
+            <button className="modern-button" onClick={onNavigateToSearch}>
+              <Search /> Explore recipes
             </button>
-
             <button
-              id="filter-my-uploads"
-              onClick={() => setActiveFilter("MY_UPLOADS")}
-              className={`px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
-                activeFilter === "MY_UPLOADS"
-                  ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-                  : isDark
-                    ? "border-[#1e3a8a] text-[#9ca3af] hover:bg-[#111827] hover:text-white"
-                    : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-              }`}
+              className="modern-button secondary"
+              onClick={onNavigateToUpload}
             >
-              MY UPLOADS
-            </button>
-
-            <button
-              id="filter-quick-fixes"
-              onClick={() => setActiveFilter("QUICK_FIXES")}
-              className={`order-last px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
-                activeFilter === "QUICK_FIXES"
-                  ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-                  : isDark
-                    ? "border-[#1e3a8a] text-[#9ca3af] hover:bg-[#111827] hover:text-white"
-                    : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-              }`}
-            >
-              QUICK FIXES
-            </button>
-
-            <button
-              id="filter-saved-box"
-              onClick={() => setActiveFilter("SAVED")}
-              className={`px-3 py-1.5 font-bold uppercase transition-none tracking-wider border ${
-                activeFilter === "SAVED"
-                  ? isDark
-                    ? "bg-[#1e3a8a] text-white border-[#3b82f6]"
-                    : "bg-[#001255] text-white border-[#001255]"
-                  : isDark
-                    ? "border-[#1e3a8a] text-[#9ca3af] hover:bg-[#111827] hover:text-white"
-                    : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-              }`}
-            >
-              FAVORITES ({recipes.filter((r) => r.inMyBox).length})
+              <Plus /> Add your own
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-start">
-        {filteredRecipes.map((recipe) => (
-          <RecipeCard
-            key={recipe.id}
-            cardId={`recipe-card-${recipe.id}`}
-            toggleButtonId={`btn-toggle-box-${recipe.id}`}
-            recipe={recipe}
-            theme={theme}
-            copiedId={copiedId}
-            onSelectRecipe={onSelectRecipe}
-            onToggleMyBox={onToggleMyBox}
-            onCopyQuickData={handleCopyQuickData}
-          />
-        ))}
-
-        {/* Empty Box Card Prompt (As seen in Image 5) */}
-        {filteredRecipes.length === 0 && (
-          <div
-            id="empty-box-card-cta"
-            className={`flex flex-col items-center justify-center text-center p-8 h-[500px] border-2 border-dashed ${
-              isDark
-                ? "bg-[#030712] border-[#1e3a8a] text-white"
-                : "bg-white border-[#001255] text-[#001255] brutalist-shadow"
-            }`}
-          >
-            <div
-              className={`w-16 h-16 mb-4 flex items-center justify-center border-2 ${
-                isDark
-                  ? "border-[#3b82f6] text-[#3b82f6]"
-                  : "border-[#001255] text-[#001255]"
-              }`}
-            >
-              <Bookmark className="w-8 h-8 opacity-80" />
-            </div>
-
-            <h4 className="text-base font-bold font-mono tracking-widest uppercase mb-2 max-w-[200px] leading-snug">
-              YOUR BOX IS EMPTY. GO FIND SOME RECIPES OR UPLOAD YOUR OWN.
-            </h4>
-
-            <div className="flex flex-col gap-3 w-full max-w-[180px] mt-4">
-              <button
-                id="btn-empty-card-search"
-                onClick={onNavigateToSearch}
-                className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase transition-none flex items-center justify-center gap-2 ${
-                  isDark
-                    ? "bg-[#1e3a8a] text-white hover:bg-[#2563eb]"
-                    : "bg-[#001255] text-white hover:bg-[#1a2a6c]"
-                }`}
-              >
-                <Search className="w-3.5 h-3.5" />
-                <span>SEARCH</span>
-              </button>
-
-              <button
-                id="btn-empty-card-upload"
-                onClick={onNavigateToUpload}
-                className={`w-full py-2 px-3 font-mono text-xs font-bold uppercase border transition-none flex items-center justify-center gap-1.5 ${
-                  isDark
-                    ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#111827]"
-                    : "border-[#001255] text-[#001255] hover:bg-[#f0eded]"
-                }`}
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>DONATE RECIPE</span>
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 };
