@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { Recipe, ThemeMode } from "../types";
 import {
   Camera,
-  Sparkles,
   AlertTriangle,
   Check,
   Upload,
@@ -33,9 +32,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
   const [tag, setTag] = useState<string>("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [warningNote, setWarningNote] = useState<string>("");
-  const [isStripperOpen, setIsStripperOpen] = useState(false);
-  const [blogText, setBlogText] = useState("");
-  const [isStripping, setIsStripping] = useState(false);
   const [notification, setNotification] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -63,68 +59,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  // Quick Backstory Stripper
-  const handleStripBackstory = () => {
-    if (!blogText.trim()) return;
-    setIsStripping(true);
-
-    setTimeout(() => {
-      // Clean heuristic parser to strip story fluff
-      const lines = blogText
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
-      const parsedIngredients: string[] = [];
-      const parsedInstructions: string[] = [];
-      let detectedName = recipeName || "CLEANED RECIPE";
-
-      for (const line of lines) {
-        if (!detectedName && line.length < 50 && !line.includes(":")) {
-          detectedName = line.toUpperCase();
-        } else if (
-          line.match(/^(\d+|\d\/\d|½|¼|¾|\-|\*|cup|tbsp|tsp|g|oz|lb|pinch)/i) ||
-          line.toLowerCase().includes("salt") ||
-          line.toLowerCase().includes("pepper") ||
-          line.toLowerCase().includes("oil")
-        ) {
-          parsedIngredients.push(line.replace(/^[-*•]\s*/, ""));
-        } else if (
-          line.match(/^\d+[\.\)]/i) ||
-          line.toLowerCase().startsWith("step") ||
-          line.toLowerCase().startsWith("heat") ||
-          line.toLowerCase().startsWith("mix") ||
-          line.toLowerCase().startsWith("bake") ||
-          line.toLowerCase().startsWith("boil") ||
-          line.toLowerCase().startsWith("cook") ||
-          line.toLowerCase().startsWith("chop")
-        ) {
-          parsedInstructions.push(line.replace(/^\d+[\.\)]\s*/, ""));
-        }
-      }
-
-      if (detectedName) setRecipeName(detectedName.toUpperCase());
-      if (parsedIngredients.length > 0) {
-        const newIngredients = Array(10).fill("");
-        parsedIngredients.slice(0, 10).forEach((ingredient, idx) => {
-          newIngredients[idx] = ingredient;
-        });
-        setIngredients(newIngredients);
-      }
-      if (parsedInstructions.length > 0) {
-        const newSteps = Array(10).fill("");
-        parsedInstructions.slice(0, 10).forEach((st, idx) => {
-          newSteps[idx] = st;
-        });
-        setSteps(newSteps);
-      }
-
-      setIsStripping(false);
-      setIsStripperOpen(false);
-      setNotification("BACKSTORY PURGED. RAW DATA EXTRACTED.");
-      setTimeout(() => setNotification(null), 3000);
-    }, 600);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -194,26 +128,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
         >
           Keep it brief. We don't care how your cat feels about this dish.
         </p>
-
-        {/* Quick Backstory Purger trigger */}
-        <div className="mt-4 flex justify-center">
-          <button
-            type="button"
-            onClick={() => setIsStripperOpen(!isStripperOpen)}
-            className={`text-xs font-mono px-3 py-1.5 border transition-none flex items-center gap-1.5 ${
-              isDark
-                ? "border-[#1e3a8a] text-[#93c5fd] hover:bg-[#111827]"
-                : "border-[#001255] text-[#001255] hover:bg-[#e5e2dc]"
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>
-              {isStripperOpen
-                ? "CLOSE STRIPPER TOOL"
-                : "PASTE FOOD BLOG -> PURGE BACKSTORY"}
-            </span>
-          </button>
-        </div>
       </div>
 
       {/* Notification Toast */}
@@ -221,55 +135,6 @@ export const UploadView: React.FC<UploadViewProps> = ({
         <div className="mb-6 w-full max-w-3xl p-3 bg-[#001255] text-white font-mono text-xs flex items-center gap-2 brutalist-shadow">
           <Check className="w-4 h-4 text-green-400 shrink-0" />
           <span>{notification}</span>
-        </div>
-      )}
-
-      {/* Backstory Stripper Modal/Panel */}
-      {isStripperOpen && (
-        <div
-          className={`w-full max-w-3xl mb-8 p-6 border-2 ${
-            isDark
-              ? "bg-[#0b132b] border-[#3b82f6] text-white"
-              : "bg-white border-[#001255] text-[#001255]"
-          } brutalist-shadow`}
-        >
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="font-bold font-mono text-xs uppercase tracking-widest flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-amber-500" />
-              FLUFF PURGER — ZERO BACKSTORY PARSER
-            </h3>
-            <button
-              onClick={() => setIsStripperOpen(false)}
-              className="p-1 hover:bg-black/10 text-xs font-mono"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-          <p className="text-xs font-mono opacity-80 mb-3">
-            Paste any long-winded food blog essay or copied recipe page below.
-            We will extract only the hard data.
-          </p>
-          <textarea
-            rows={4}
-            value={blogText}
-            onChange={(e) => setBlogText(e.target.value)}
-            placeholder="Paste 10 paragraphs of childhood memories and recipe text here..."
-            className={`w-full p-3 font-mono text-xs border ${
-              isDark
-                ? "bg-[#030712] border-[#1e3a8a] text-white"
-                : "bg-[#fcf9f8] border-[#001255]"
-            }`}
-          />
-          <div className="mt-3 flex justify-end gap-2">
-            <button
-              type="button"
-              disabled={isStripping || !blogText.trim()}
-              onClick={handleStripBackstory}
-              className="px-4 py-2 bg-[#001255] text-white font-mono text-xs font-bold uppercase disabled:opacity-50"
-            >
-              {isStripping ? "PURGING..." : "EXTRACT DATA INTO FORM"}
-            </button>
-          </div>
         </div>
       )}
 
