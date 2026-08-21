@@ -67,10 +67,12 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   return (
     <div
       id="recipe-modal-overlay"
+      onClick={onClose}
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto"
     >
       <div
         id="recipe-index-card-modal"
+        onClick={(event) => event.stopPropagation()}
         className={`relative w-full max-w-3xl my-8 border p-6 md:p-10 font-mono ${
           isDark
             ? "bg-[#050b14] border-[#1e3a8a] text-white shadow-2xl"

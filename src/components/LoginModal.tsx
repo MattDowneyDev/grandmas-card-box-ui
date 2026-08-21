@@ -158,9 +158,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+    <div
+      id="login-modal-overlay"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs"
+      onClick={onClose}
+    >
       <div
         id="auth-modal"
+        onClick={(event) => event.stopPropagation()}
         className={`relative w-full max-w-md border p-6 md:p-8 font-mono ${
           isDark
             ? "bg-[#050b14] border-[#1e3a8a] text-white"

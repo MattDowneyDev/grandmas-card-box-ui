@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
 import {
@@ -129,12 +129,6 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handlePopState = () => setActiveTab(getTabFromPath());
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
-
-  useEffect(() => {
     const requiresLogin = activeTab === "my-box" || activeTab === "upload";
     if (requiresLogin && (!isLoggedIn || !authToken)) {
       window.history.replaceState({}, "", ROUTE_PATHS.search);
@@ -145,6 +139,41 @@ export default function App() {
 
   // Currently inspected recipe for detail modal
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  const recipeScrollPosition = useRef(0);
+
+  const openRecipe = (recipe: Recipe) => {
+    recipeScrollPosition.current = window.scrollY;
+    setSelectedRecipe(recipe);
+  };
+
+  const closeRecipe = () => {
+    setSelectedRecipe(null);
+    window.requestAnimationFrame(() => {
+      window.scrollTo({ top: recipeScrollPosition.current, behavior: "auto" });
+    });
+  };
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (selectedRecipe) {
+        setSelectedRecipe(null);
+        window.history.replaceState({}, "", ROUTE_PATHS.search);
+        setActiveTab("search");
+        window.requestAnimationFrame(() => {
+          window.scrollTo({
+            top: recipeScrollPosition.current,
+            behavior: "auto",
+          });
+        });
+        return;
+      }
+
+      setActiveTab(getTabFromPath());
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [selectedRecipe]);
 
   useEffect(() => {
     try {
@@ -319,7 +348,7 @@ export default function App() {
             <CardBoxView
               recipes={myBoxRecipes}
               theme={theme}
-              onSelectRecipe={(recipe) => setSelectedRecipe(recipe)}
+              onSelectRecipe={openRecipe}
               onToggleMyBox={handleToggleMyBox}
               onNavigateToSearch={() => handleTabChange("search")}
               onNavigateToUpload={() => handleTabChange("upload")}
@@ -334,7 +363,7 @@ export default function App() {
             <SearchView
               recipes={recipes}
               theme={theme}
-              onSelectRecipe={(recipe) => setSelectedRecipe(recipe)}
+              onSelectRecipe={openRecipe}
               onToggleMyBox={handleToggleMyBox}
             />
           )}
@@ -349,7 +378,7 @@ export default function App() {
         <RecipeModal
           recipe={selectedRecipe}
           theme={theme}
-          onClose={() => setSelectedRecipe(null)}
+          onClose={closeRecipe}
           onToggleMyBox={handleToggleMyBox}
           onDeleteRecipe={isLoggedIn ? handleDeleteRecipe : undefined}
         />
