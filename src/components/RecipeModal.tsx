@@ -65,7 +65,10 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto">
+    <div
+      id="recipe-modal-overlay"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs overflow-y-auto"
+    >
       <div
         id="recipe-index-card-modal"
         className={`relative w-full max-w-3xl my-8 border p-6 md:p-10 font-mono ${
