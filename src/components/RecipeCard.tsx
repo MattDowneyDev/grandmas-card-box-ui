@@ -1,22 +1,12 @@
 import React from "react";
 import { Recipe, ThemeMode } from "../types";
-import {
-  Bookmark,
-  BookmarkCheck,
-  Check,
-  Clock,
-  Eye,
-  Share2,
-  Utensils,
-} from "lucide-react";
+import { Bookmark, BookmarkCheck, Clock, Utensils } from "lucide-react";
 
 interface RecipeCardProps {
   recipe: Recipe;
   theme: ThemeMode;
-  copiedId: string | null;
   onSelectRecipe: (recipe: Recipe) => void;
   onToggleMyBox: (recipeId: string) => void;
-  onCopyQuickData: (event: React.MouseEvent, recipe: Recipe) => void;
   cardId?: string;
   toggleButtonId?: string;
 }
@@ -24,10 +14,8 @@ interface RecipeCardProps {
 export const RecipeCard: React.FC<RecipeCardProps> = ({
   recipe,
   theme,
-  copiedId,
   onSelectRecipe,
   onToggleMyBox,
-  onCopyQuickData,
   cardId,
   toggleButtonId,
 }) => {
@@ -38,11 +26,11 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
     <div
       id={cardId}
       onClick={() => onSelectRecipe(recipe)}
-      className={`cursor-pointer transition-all duration-300 flex flex-col justify-between rounded-3xl border shadow-lg shadow-[#573a23]/5 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#573a23]/15 ${
+      className={`cursor-pointer transition-all duration-300 flex flex-col rounded-3xl border shadow-lg shadow-[#573a23]/5 hover:-translate-y-1 hover:shadow-xl hover:shadow-[#573a23]/15 ${
         isDark
           ? "bg-[#050b14] border-[#5f503b] hover:border-[#8d7548] text-[#dde1ff]"
           : "bg-[#fffaf2] border-[#eadfce] hover:bg-white text-[#332c24]"
-      } p-5 h-[500px] overflow-hidden group`}
+      } p-5 min-h-[360px] overflow-hidden group`}
     >
       <div>
         <div className="flex items-start justify-between gap-3 mb-3">
@@ -122,41 +110,6 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
         >
           {recipe.ingredients.slice(0, 3).join(", ")}
           {recipe.ingredients.length > 3 && "..."}
-        </div>
-      </div>
-
-      <div
-        className={`pt-3 border-t flex items-center justify-between font-mono text-xs ${isDark ? "border-[#5f503b]" : "border-[#eadfce]"}`}
-      >
-        <div className="flex items-center gap-2">
-          <button
-            onClick={(event) => onCopyQuickData(event, recipe)}
-            className={`px-3 py-2 rounded-full text-[11px] transition flex items-center gap-1 ${isDark ? "text-[#cfc3ad] hover:bg-white/10" : "text-[#766957] hover:bg-black/5"}`}
-            title="Copy zero-backstory text data"
-          >
-            {copiedId === recipe.id ? (
-              <>
-                <Check className="w-3 h-3 text-green-500" />
-                <span>COPIED</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3 h-3" />
-                <span>DATA</span>
-              </>
-            )}
-          </button>
-
-          <button
-            onClick={(event) => {
-              event.stopPropagation();
-              onSelectRecipe(recipe);
-            }}
-            className={`px-4 py-2 rounded-full text-[11px] font-bold transition flex items-center gap-1 ${isDark ? "bg-[#f5cc75] text-[#332c24] hover:bg-[#e4bf67]" : "bg-[#6f3f27] text-white hover:bg-[#a84b2a]"}`}
-          >
-            <Eye className="w-3 h-3" />
-            <span>VIEW</span>
-          </button>
         </div>
       </div>
     </div>

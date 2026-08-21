@@ -21,7 +21,6 @@ export const CardBoxView: React.FC<Props> = ({
   onNavigateToUpload,
 }) => {
   const [filter, setFilter] = useState<FilterCategory>("ALL");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   const filtered = recipes.filter(
     (recipe) =>
       filter === "ALL" ||
@@ -30,14 +29,6 @@ export const CardBoxView: React.FC<Props> = ({
         (recipe.ingredients.length <= 4 || recipe.cookTimeMin <= 15)) ||
       (filter === "SAVED" && recipe.inMyBox),
   );
-  const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
-    event.stopPropagation();
-    navigator.clipboard.writeText(
-      `${recipe.title}\n${recipe.ingredients.join("\n")}`,
-    );
-    setCopiedId(recipe.id);
-    setTimeout(() => setCopiedId(null), 1800);
-  };
   const filters: { id: FilterCategory; label: string }[] = [
     { id: "ALL", label: "Everything" },
     { id: "SAVED", label: "Favorites" },
@@ -84,10 +75,8 @@ export const CardBoxView: React.FC<Props> = ({
               key={recipe.id}
               recipe={recipe}
               theme={theme}
-              copiedId={copiedId}
               onSelectRecipe={onSelectRecipe}
               onToggleMyBox={onToggleMyBox}
-              onCopyQuickData={copyRecipe}
             />
           ))}
         </div>

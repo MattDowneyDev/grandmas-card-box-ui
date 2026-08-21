@@ -35,7 +35,6 @@ export const SearchView: React.FC<Props> = ({
   const [maxTime, setMaxTime] = useState(maxAvailableTime);
   const [maxIngredients, setMaxIngredients] = useState(10);
   const [sortOrder, setSortOrder] = useState<"random" | "popular" | "newest">("random");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
   useEffect(() => {
     setMaxTime(maxAvailableTime);
   }, [maxAvailableTime]);
@@ -80,15 +79,6 @@ export const SearchView: React.FC<Props> = ({
     tag !== "ALL" ||
     maxTime < maxAvailableTime ||
     maxIngredients < 10;
-
-  const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
-    event.stopPropagation();
-    navigator.clipboard.writeText(
-      `${recipe.title}\n\nINGREDIENTS\n${recipe.ingredients.join("\n")}\n\nINSTRUCTIONS\n${recipe.instructions.join("\n")}`,
-    );
-    setCopiedId(recipe.id);
-    setTimeout(() => setCopiedId(null), 1800);
-  };
 
   return (
     <div className="modern-page">
@@ -208,10 +198,8 @@ export const SearchView: React.FC<Props> = ({
               key={recipe.id}
               recipe={recipe}
               theme={theme}
-              copiedId={copiedId}
               onSelectRecipe={onSelectRecipe}
               onToggleMyBox={onToggleMyBox}
-              onCopyQuickData={copyRecipe}
             />
           ))}
         </div>
