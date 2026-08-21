@@ -90,6 +90,32 @@ export async function resetPassword(token: string, password: string): Promise<vo
   }
 }
 
+export async function updateAccount(
+  token: string,
+  updates: {
+    displayName?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  },
+): Promise<{ email: string; displayName: string }> {
+  const response = await fetch(`${API_BASE_URL}/auth/me`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
+  });
+  const payload = (await response.json()) as {
+    user?: { email: string; displayName: string };
+    error?: string;
+  };
+  if (!response.ok || !payload.user) {
+    throw new Error(payload.error || `Account update failed (${response.status})`);
+  }
+  return payload.user;
+}
+
 export async function deleteAccount(token: string): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     method: "DELETE",

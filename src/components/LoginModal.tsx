@@ -21,6 +21,11 @@ interface LoginModalProps {
   ) => Promise<AuthSession>;
   onRequestPasswordReset: (email: string) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
+  onUpdateAccount: (updates: {
+    displayName?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => Promise<void>;
   onLogout: () => void;
 }
 
@@ -35,6 +40,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onSignup,
   onRequestPasswordReset,
   onDeleteAccount,
+  onUpdateAccount,
   onLogout,
 }) => {
   if (!isOpen) return null;
@@ -49,6 +55,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isEditingAccount, setIsEditingAccount] = useState(false);
+  const [accountDisplayName, setAccountDisplayName] = useState(userHandle);
+  const [currentPasswordInput, setCurrentPasswordInput] = useState("");
+  const [newPasswordInput, setNewPasswordInput] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -107,6 +117,38 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
+  const handleAccountUpdate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    try {
+      const displayNameChanged = accountDisplayName.trim().toUpperCase() !== userHandle;
+      const passwordChanged = Boolean(newPasswordInput);
+      if (!displayNameChanged && !passwordChanged) {
+        throw new Error("Make a change before saving your account.");
+      }
+      if (passwordChanged && newPasswordInput.length < 8) {
+        throw new Error("New password must be at least 8 characters.");
+      }
+      await onUpdateAccount({
+        ...(displayNameChanged ? { displayName: accountDisplayName.trim() } : {}),
+        ...(passwordChanged
+          ? { currentPassword: currentPasswordInput, newPassword: newPasswordInput }
+          : {}),
+      });
+      setCurrentPasswordInput("");
+      setNewPasswordInput("");
+      setIsEditingAccount(false);
+      setSuccessMessage("Your account has been updated.");
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : "Account update failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
       <div
@@ -159,6 +201,74 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <p className="text-xs opacity-80 leading-relaxed">
               Your uploaded and favorited recipes are saved automatically.
             </p>
+
+            {isEditingAccount ? (
+              <form onSubmit={handleAccountUpdate} className="account-edit-form">
+                <label>
+                  DISPLAY NAME
+                  <input
+                    type="text"
+                    required
+                    minLength={2}
+                    maxLength={50}
+                    value={accountDisplayName}
+                    onChange={(event) => setAccountDisplayName(event.target.value)}
+                  />
+                </label>
+                <div className="account-password-fields">
+                  <label>
+                    CURRENT PASSWORD
+                    <input
+                      type="password"
+                      value={currentPasswordInput}
+                      onChange={(event) => setCurrentPasswordInput(event.target.value)}
+                      placeholder="Only needed to change password"
+                    />
+                  </label>
+                  <label>
+                    NEW PASSWORD
+                    <input
+                      type="password"
+                      minLength={8}
+                      value={newPasswordInput}
+                      onChange={(event) => setNewPasswordInput(event.target.value)}
+                      placeholder="Leave blank to keep it"
+                    />
+                  </label>
+                </div>
+                <div className="account-edit-actions">
+                  <button type="submit" className="modern-button" disabled={isSubmitting}>
+                    {isSubmitting ? "Saving..." : "Save changes"}
+                  </button>
+                  <button
+                    type="button"
+                    className="modern-button secondary"
+                    onClick={() => {
+                      setIsEditingAccount(false);
+                      setAccountDisplayName(userHandle);
+                      setCurrentPasswordInput("");
+                      setNewPasswordInput("");
+                      setErrorMessage(null);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                type="button"
+                className="modern-button secondary account-edit-trigger"
+                onClick={() => {
+                  setAccountDisplayName(userHandle);
+                  setIsEditingAccount(true);
+                  setErrorMessage(null);
+                  setSuccessMessage(null);
+                }}
+              >
+                Edit account
+              </button>
+            )}
 
             {errorMessage && (
               <div className="border border-red-600 p-2 text-xs text-red-500">

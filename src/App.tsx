@@ -13,6 +13,7 @@ import {
   login,
   requestPasswordReset,
   signup,
+  updateAccount,
 } from "./api/auth";
 import {
   createRecipe,
@@ -260,6 +261,17 @@ export default function App() {
     handleTabChange("search");
   };
 
+  const handleUpdateAccount = async (updates: {
+    displayName?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) => {
+    if (!authToken) return;
+    const user = await updateAccount(authToken, updates);
+    setUserHandle(user.displayName.toUpperCase());
+    localStorage.setItem("cardbox_user", user.displayName.toUpperCase());
+  };
+
   const myBoxRecipes = recipes.filter(
     (recipe) => recipe.isUserUpload || recipe.inMyBox,
   );
@@ -356,6 +368,7 @@ export default function App() {
           onSignup={signup}
           onRequestPasswordReset={requestPasswordReset}
           onDeleteAccount={handleDeleteAccount}
+          onUpdateAccount={handleUpdateAccount}
           onLogout={handleLogout}
         />
       )}

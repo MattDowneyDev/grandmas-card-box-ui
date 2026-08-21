@@ -256,6 +256,16 @@ button {
 .modern-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; background: #6f3f27; color: white; padding: 13px 20px; font-size: .8rem; font-weight: 700; }
 .modern-button svg { width: 16px; height: 16px; }
 .modern-button.secondary { border: 1px solid #d5c3ad; background: transparent; color: #6f3f27; }
+.account-edit-form { display: grid; gap: 16px; border-top: 1px solid #eadfce; padding-top: 18px; }
+.account-edit-form label { display: grid; gap: 7px; color: #766957; font-size: .72rem; font-weight: 700; }
+.account-edit-form input { width: 100%; border: 1px solid #e4d5c1; border-radius: 12px; background: #fffaf2; color: #332c24; padding: 11px 12px; outline: none; }
+.account-edit-form input:focus { border-color: #a84b2a; outline: 3px solid rgba(168, 75, 42, .12); }
+.account-password-fields { display: grid; gap: 12px; }
+.account-edit-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.account-edit-trigger { width: 100%; }
+.dark .account-edit-form { border-color: #5f503b; }
+.dark .account-edit-form input { border-color: #5f503b; background: #302a24; color: #f7f1e7; }
+.dark .account-edit-form input:focus { border-color: #f5cc75; outline-color: rgba(245, 204, 117, .14); }
 .modern-notice { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; border-radius: 14px; background: #e4efd8; color: #3e6935; padding: 14px 16px; font-size: .85rem; }
 .modern-notice svg { width: 18px; height: 18px; flex: 0 0 auto; }
 .modern-notice-error { border: 1px solid #e8b9a8; background: #fff0eb; color: #a84b2a; }
