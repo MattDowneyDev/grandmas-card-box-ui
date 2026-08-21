@@ -42,13 +42,14 @@ export const SearchView: React.FC<Props> = ({
     );
   });
 
-  // ***** ADD THIS BACK IN LATER *****
-  // const clear = () => {
-  //   setQuery("");
-  //   setTag("ALL");
-  //   setMaxTime(480);
-  //   setMaxIngredients(10);
-  // };
+  const clear = () => {
+    setQuery("");
+    setTag("ALL");
+    setMaxTime(480);
+    setMaxIngredients(10);
+  };
+  const hasActiveFilters =
+    query || tag !== "ALL" || maxTime < 480 || maxIngredients < 10;
 
   const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
     event.stopPropagation();
@@ -142,12 +143,14 @@ export const SearchView: React.FC<Props> = ({
             />
           </label>
 
-          {/* ***** ADD THIS BACK IN LATER ***** */}
-          {/* {(query || tag !== "ALL" || maxTime < 480 || maxIngredients < 10) && (
-            <button className="filter-reset" onClick={clear}>
-              Reset filters
-            </button>
-          )} */}
+          <button
+            className={`filter-reset ${hasActiveFilters ? "" : "is-hidden"}`}
+            onClick={clear}
+            tabIndex={hasActiveFilters ? 0 : -1}
+            aria-hidden={!hasActiveFilters}
+          >
+            Reset filters
+          </button>
         </div>
       </section>
 
@@ -156,10 +159,9 @@ export const SearchView: React.FC<Props> = ({
           <h3>Nothing matched that search</h3>
           <p>Try a broader ingredient, category, or time range.</p>
 
-          {/* ***** ADD THIS BACK IN LATER ***** */}
-          {/* <button className="modern-button secondary" onClick={clear}>
+          <button className="modern-button secondary" onClick={clear}>
             Clear filters
-          </button> */}
+          </button>
         </div>
       ) : (
         <div className="modern-recipe-grid">

@@ -237,6 +237,7 @@ button {
 .modern-filters output { float: right; font-weight: 400; }
 .modern-filters input[type="range"] { padding: 8px 0; accent-color: #a84b2a; }
 .filter-reset { border: 0; color: #a84b2a; background: transparent; font-size: .76rem; font-weight: 700; white-space: nowrap; }
+.filter-reset.is-hidden { visibility: hidden; pointer-events: none; }
 .modern-filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
 .modern-filter-row button { display: inline-flex; align-items: center; gap: 8px; border: 1px solid #eadfce; border-radius: 999px; background: #fffaf2; color: #766957; padding: 10px 14px; font-size: .78rem; font-weight: 700; }
 .modern-filter-row button span { color: #b18d5c; font-size: .7rem; font-weight: 600; }

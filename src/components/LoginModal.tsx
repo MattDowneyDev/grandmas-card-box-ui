@@ -124,7 +124,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setSuccessMessage(null);
 
     try {
-      const displayNameChanged = accountDisplayName.trim().toUpperCase() !== userHandle;
+      const displayNameChanged =
+        accountDisplayName.trim().toUpperCase() !== userHandle;
       const passwordChanged = Boolean(newPasswordInput);
       if (!displayNameChanged && !passwordChanged) {
         throw new Error("Make a change before saving your account.");
@@ -133,9 +134,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         throw new Error("New password must be at least 8 characters.");
       }
       await onUpdateAccount({
-        ...(displayNameChanged ? { displayName: accountDisplayName.trim() } : {}),
+        ...(displayNameChanged
+          ? { displayName: accountDisplayName.trim() }
+          : {}),
         ...(passwordChanged
-          ? { currentPassword: currentPasswordInput, newPassword: newPasswordInput }
+          ? {
+              currentPassword: currentPasswordInput,
+              newPassword: newPasswordInput,
+            }
           : {}),
       });
       setCurrentPasswordInput("");
@@ -143,7 +149,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       setIsEditingAccount(false);
       setSuccessMessage("Your account has been updated.");
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : "Account update failed");
+      setErrorMessage(
+        error instanceof Error ? error.message : "Account update failed",
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -203,7 +211,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             </p>
 
             {isEditingAccount ? (
-              <form onSubmit={handleAccountUpdate} className="account-edit-form">
+              <form
+                onSubmit={handleAccountUpdate}
+                className="account-edit-form"
+              >
                 <label>
                   DISPLAY NAME
                   <input
@@ -212,7 +223,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     minLength={2}
                     maxLength={50}
                     value={accountDisplayName}
-                    onChange={(event) => setAccountDisplayName(event.target.value)}
+                    onChange={(event) =>
+                      setAccountDisplayName(event.target.value)
+                    }
                   />
                 </label>
                 <div className="account-password-fields">
@@ -221,7 +234,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     <input
                       type="password"
                       value={currentPasswordInput}
-                      onChange={(event) => setCurrentPasswordInput(event.target.value)}
+                      onChange={(event) =>
+                        setCurrentPasswordInput(event.target.value)
+                      }
                       placeholder="Only needed to change password"
                     />
                   </label>
@@ -231,13 +246,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       type="password"
                       minLength={8}
                       value={newPasswordInput}
-                      onChange={(event) => setNewPasswordInput(event.target.value)}
+                      onChange={(event) =>
+                        setNewPasswordInput(event.target.value)
+                      }
                       placeholder="Leave blank to keep it"
                     />
                   </label>
                 </div>
                 <div className="account-edit-actions">
-                  <button type="submit" className="modern-button" disabled={isSubmitting}>
+                  <button
+                    type="submit"
+                    className="modern-button"
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? "Saving..." : "Save changes"}
                   </button>
                   <button
