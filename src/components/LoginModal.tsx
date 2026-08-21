@@ -174,8 +174,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs opacity-80 leading-relaxed">
               {isSignup
-                ? "Create an account to sync your recipes and saved cards."
-                : "Enter your account credentials to access your synced recipe box."}
+                ? "Create an account to add favorites to your card box. Don't worry, we won't spam you. We just need your email to send you a password reset link if you forget it."
+                : "Log in to add favorites to your card box."}
             </p>
 
             <div>

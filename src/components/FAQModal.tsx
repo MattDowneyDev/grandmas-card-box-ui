@@ -32,9 +32,9 @@ export const FAQModal: React.FC<FAQModalProps> = ({ type, theme, onClose }) => {
               <FileText className="w-5 h-5 text-amber-600" />
             )}
             <h2 className="text-xl font-bold uppercase font-heading tracking-tight">
-              {type === "faq" && "SARCASTIC FAQ & MANIFESTO"}
+              {type === "faq" && "FAQ & MANIFESTO"}
               {type === "privacy" && "PRIVACY POLICY (DATA MINIMALISM)"}
-              {type === "terms" && "TERMS OF DIRECT DATA ACCESS"}
+              {type === "terms" && "TERMS OF USE"}
             </h2>
           </div>
 
