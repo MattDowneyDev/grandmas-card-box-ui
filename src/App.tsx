@@ -11,6 +11,7 @@ import {
   deleteAccount,
   getCurrentUser,
   login,
+  requestPasswordReset,
   signup,
 } from "./api/auth";
 import {
@@ -26,6 +27,7 @@ import { SearchView } from "./components/SearchView";
 import { RecipeModal } from "./components/RecipeModal";
 import { FAQModal } from "./components/FAQModal";
 import { LoginModal } from "./components/LoginModal";
+import { PasswordResetView } from "./components/PasswordResetView";
 import { Footer } from "./components/Footer";
 
 const ROUTE_PATHS: Record<"my-box" | "search" | "upload", string> = {
@@ -270,6 +272,21 @@ export default function App() {
     (recipe) => recipe.isUserUpload || recipe.inMyBox,
   );
   const myBoxCount = myBoxRecipes.length;
+  const resetToken = new URLSearchParams(window.location.search).get("token");
+
+  if (window.location.pathname === "/reset-password") {
+    return (
+      <PasswordResetView
+        theme={theme}
+        token={resetToken || ""}
+        onBackToLogin={() => {
+          window.history.replaceState({}, "", ROUTE_PATHS.search);
+          setActiveTab("search");
+          setIsLoginOpen(true);
+        }}
+      />
+    );
+  }
 
   return (
     <div
@@ -364,6 +381,7 @@ export default function App() {
           onLogin={handleLogin}
           onLoginWithPassword={login}
           onSignup={signup}
+          onRequestPasswordReset={requestPasswordReset}
           onDeleteAccount={handleDeleteAccount}
           onLogout={handleLogout}
         />

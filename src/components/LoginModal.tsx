@@ -19,6 +19,7 @@ interface LoginModalProps {
     password: string,
     displayName: string,
   ) => Promise<AuthSession>;
+  onRequestPasswordReset: (email: string) => Promise<void>;
   onDeleteAccount: () => Promise<void>;
   onLogout: () => void;
 }
@@ -32,6 +33,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLogin,
   onLoginWithPassword,
   onSignup,
+  onRequestPasswordReset,
   onDeleteAccount,
   onLogout,
 }) => {
@@ -42,7 +44,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [passwordInput, setPasswordInput] = useState("");
   const [displayNameInput, setDisplayNameInput] = useState("");
   const [isSignup, setIsSignup] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -50,8 +54,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     e.preventDefault();
     setIsSubmitting(true);
     setErrorMessage(null);
+    setSuccessMessage(null);
 
     try {
+      if (isForgotPassword) {
+        await onRequestPasswordReset(emailInput.trim());
+        setErrorMessage(null);
+        setSuccessMessage(
+          "If an account exists for that email, a reset link has been sent.",
+        );
+        return;
+      }
+
       const session = isSignup
         ? await onSignup(
             emailInput.trim(),
@@ -173,18 +187,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <p className="text-xs opacity-80 leading-relaxed">
-              {isSignup
-                ? "Create an account to add favorites to your card box. Don't worry, we won't spam you. We just need your email to send you a password reset link if you forget it."
-                : "Log in to add favorites to your card box."}
+              {isForgotPassword
+                ? "Enter your email and we will send a password reset link if an account exists."
+                : isSignup
+                  ? "Create an account to add favorites to your card box. Don't worry, we won't spam you. We just need your email to send you a password reset link if you forget it."
+                  : "Log in to add favorites to your card box."}
             </p>
 
-            <div>
-              {isSignup && (
+            {!isForgotPassword && isSignup && (
+              <div>
                 <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
                   DISPLAY NAME
                 </label>
-              )}
-              {isSignup && (
                 <input
                   type="text"
                   required
@@ -197,7 +211,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
                   }`}
                 />
-              )}
+              </div>
+            )}
+
+            <div>
               <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
                 EMAIL
               </label>
@@ -215,27 +232,34 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
-                PASSWORD
-              </label>
-              <input
-                type="password"
-                required
-                minLength={8}
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                className={`w-full p-2.5 font-mono text-xs border ${
-                  isDark
-                    ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
-                    : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
-                }`}
-              />
-            </div>
+            {!isForgotPassword && (
+              <div>
+                <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
+                  PASSWORD
+                </label>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className={`w-full p-2.5 font-mono text-xs border ${
+                    isDark
+                      ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
+                      : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
+                  }`}
+                />
+              </div>
+            )}
 
             {errorMessage && (
               <div className="border border-red-600 p-2 text-xs text-red-500">
                 {errorMessage}
+              </div>
+            )}
+            {successMessage && (
+              <div className="border border-green-600 p-2 text-xs text-green-600">
+                {successMessage}
               </div>
             )}
 
@@ -247,16 +271,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               >
                 CANCEL
               </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setIsSignup(!isSignup);
-                  setErrorMessage(null);
-                }}
-                className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
-              >
-                {isSignup ? "HAVE AN ACCOUNT" : "CREATE ACCOUNT"}
-              </button>
+              {!isForgotPassword && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSignup(!isSignup);
+                    setErrorMessage(null);
+                    setSuccessMessage(null);
+                  }}
+                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                >
+                  {isSignup ? "HAVE AN ACCOUNT" : "CREATE ACCOUNT"}
+                </button>
+              )}
+              {!isSignup && !isForgotPassword && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(true);
+                    setErrorMessage(null);
+                    setSuccessMessage(null);
+                  }}
+                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                >
+                  FORGOT PASSWORD
+                </button>
+              )}
+              {isForgotPassword && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsForgotPassword(false);
+                    setErrorMessage(null);
+                    setSuccessMessage(null);
+                  }}
+                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                >
+                  BACK TO LOGIN
+                </button>
+              )}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -265,10 +318,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 }`}
               >
                 {isSubmitting
-                  ? "CONNECTING..."
-                  : isSignup
-                    ? "SIGN UP"
-                    : "LOG IN"}
+                  ? "SENDING..."
+                  : isForgotPassword
+                    ? "SEND LINK"
+                    : isSignup
+                      ? "SIGN UP"
+                      : "LOG IN"}
               </button>
             </div>
           </form>
