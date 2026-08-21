@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 import { Recipe, ThemeMode } from "../types";
 import { RecipeCard } from "./RecipeCard";
+import { RECIPE_CATEGORIES } from "../data/categories";
 
 interface Props {
   recipes: Recipe[];
@@ -34,7 +35,9 @@ export const SearchView: React.FC<Props> = ({
   const [tag, setTag] = useState("ALL");
   const [maxTime, setMaxTime] = useState(maxAvailableTime);
   const [maxIngredients, setMaxIngredients] = useState(10);
-  const [sortOrder, setSortOrder] = useState<"random" | "popular" | "newest">("random");
+  const [sortOrder, setSortOrder] = useState<"random" | "popular" | "newest">(
+    "random",
+  );
   useEffect(() => {
     setMaxTime(maxAvailableTime);
   }, [maxAvailableTime]);
@@ -62,7 +65,9 @@ export const SearchView: React.FC<Props> = ({
       return (right.favoriteCount || 0) - (left.favoriteCount || 0);
     }
     if (sortOrder === "newest") {
-      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+      return (
+        new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()
+      );
     }
     return 0;
   });
@@ -75,10 +80,7 @@ export const SearchView: React.FC<Props> = ({
     setSortOrder("random");
   };
   const hasActiveFilters =
-    query ||
-    tag !== "ALL" ||
-    maxTime < maxAvailableTime ||
-    maxIngredients < 10;
+    query || tag !== "ALL" || maxTime < maxAvailableTime || maxIngredients < 10;
 
   return (
     <div className="modern-page">
@@ -96,7 +98,7 @@ export const SearchView: React.FC<Props> = ({
           </h1>
           <p>
             Grandma didn't need someone's life story to make a great meal. She
-            just needed the ingredients.
+            just needed an index card.
           </p>
         </div>
       </section>
@@ -132,16 +134,21 @@ export const SearchView: React.FC<Props> = ({
               onChange={(event) => setTag(event.target.value)}
             >
               <option value="ALL">All categories</option>
-              <option value="Dinner">Dinner</option>
-              <option value="Quick Fix">Quick fix</option>
-              <option value="Lunch">Lunch</option>
-              <option value="Late Night">Late night</option>
-              <option value="Breakfast">Breakfast</option>
+              {RECIPE_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
             </select>
           </label>
           <label>
             Sort by
-            <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}>
+            <select
+              value={sortOrder}
+              onChange={(event) =>
+                setSortOrder(event.target.value as typeof sortOrder)
+              }
+            >
               <option value="random">Random</option>
               <option value="popular">Most popular</option>
               <option value="newest">Newest</option>

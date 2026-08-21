@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AlertCircle, Camera, Check, Plus, Trash2 } from "lucide-react";
 import { Recipe, ThemeMode } from "../types";
+import { RECIPE_CATEGORIES } from "../data/categories";
 
 interface Props {
   theme: ThemeMode;
@@ -138,12 +139,11 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
               onChange={(event) => setTag(event.target.value)}
             >
               <option value="">Choose one</option>
-              <option>Dinner</option>
-              <option>Quick Fix</option>
-              <option>Lunch</option>
-              <option>Late Night</option>
-              <option>Breakfast</option>
-              <option>Staple</option>
+              {RECIPE_CATEGORIES.map((category) => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
             </select>
           </label>
           <label>
