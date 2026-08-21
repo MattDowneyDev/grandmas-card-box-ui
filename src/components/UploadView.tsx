@@ -17,6 +17,7 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
   const [ingredients, setIngredients] = useState([""]);
   const [instructions, setInstructions] = useState([""]);
   const [imageUrl, setImageUrl] = useState("");
+  const [warningNote, setWarningNote] = useState("");
   const [notice, setNotice] = useState("");
   const [validationMessage, setValidationMessage] = useState("");
   const addLine = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
@@ -77,6 +78,7 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
       ingredients: ingredients.map((line) => line.trim()).filter(Boolean),
       instructions: instructions.map((line) => line.trim()).filter(Boolean),
       imageUrl: imageUrl || undefined,
+      warningNote: warningNote.trim() || undefined,
       inMyBox: true,
     });
     setNotice(`${cleanTitle} was added to your box.`);
@@ -88,6 +90,7 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
     setIngredients([""]);
     setInstructions([""]);
     setImageUrl("");
+    setWarningNote("");
     setTimeout(() => setNotice(""), 3500);
   };
   const readImage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,6 +220,15 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
             <input type="file" accept="image/*" onChange={readImage} />
           </label>
         </div>
+        <label className="warning-input">
+          <span>Optional note for cooks</span>
+          <textarea
+            value={warningNote}
+            onChange={(event) => setWarningNote(event.target.value)}
+            placeholder="A useful warning, substitution, or bit of hard-earned advice"
+            rows={3}
+          />
+        </label>
         <button className="modern-button submit-button" type="submit">
           <Plus /> Save recipe
         </button>

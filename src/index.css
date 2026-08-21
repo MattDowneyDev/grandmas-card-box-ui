@@ -292,6 +292,11 @@ button {
 .photo-upload strong { color: #6f3f27; }
 .photo-upload span { font-size: .8rem; }
 .photo-upload input[type="file"] { display: none; }
+.warning-input { display: grid; gap: 8px; border: 1px solid #e8b9a8; border-radius: 16px; background: #fff0eb; padding: 16px; color: #a84b2a; font-size: .76rem; font-weight: 700; }
+.warning-input textarea { width: 100%; resize: vertical; border: 1px solid #e8b9a8; border-radius: 10px; background: #fffaf2; color: #332c24; padding: 11px 12px; outline: none; font-size: .85rem; font-weight: 400; }
+.warning-input textarea:focus { border-color: #a84b2a; outline: 3px solid rgba(168, 75, 42, .12); }
+.dark .warning-input { border-color: #8a5140; background: #4a3028; color: #f2b09a; }
+.dark .warning-input textarea { border-color: #8a5140; background: #302a24; color: #f7f1e7; }
 .submit-button { justify-self: end; min-width: 160px; }
 
 .app-main { min-width: 0; }
@@ -476,4 +481,28 @@ button {
 #recipe-index-card-modal > div:first-child,
 #auth-modal > div:first-child {
   border-color: #eadfce;
+}
+
+#btn-close-recipe-modal {
+  border: 1px solid #6f3f27 !important;
+  background: #6f3f27 !important;
+  color: #fffaf2 !important;
+}
+
+#btn-close-recipe-modal:hover {
+  border-color: #a84b2a !important;
+  background: #a84b2a !important;
+  color: #fffaf2 !important;
+}
+
+.dark #btn-close-recipe-modal {
+  border-color: #f5cc75 !important;
+  background: #f5cc75 !important;
+  color: #332c24 !important;
+}
+
+.dark #btn-close-recipe-modal:hover {
+  border-color: #e4bf67 !important;
+  background: #e4bf67 !important;
+  color: #332c24 !important;
 }

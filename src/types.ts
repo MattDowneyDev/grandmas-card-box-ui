@@ -10,6 +10,7 @@ export interface Recipe {
   imageUrl?: string;
   warningNote?: string;
   createdAt: string;
+  createdByDisplayName?: string;
   isUserUpload: boolean;
   inMyBox: boolean;
   servings: number;
