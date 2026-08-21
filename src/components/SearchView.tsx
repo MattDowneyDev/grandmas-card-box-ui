@@ -34,11 +34,12 @@ export const SearchView: React.FC<Props> = ({
   const [tag, setTag] = useState("ALL");
   const [maxTime, setMaxTime] = useState(maxAvailableTime);
   const [maxIngredients, setMaxIngredients] = useState(10);
+  const [sortOrder, setSortOrder] = useState<"random" | "popular" | "newest">("random");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   useEffect(() => {
     setMaxTime(maxAvailableTime);
   }, [maxAvailableTime]);
-  const filtered = recipes.filter((recipe) => {
+  const filteredRecipes = recipes.filter((recipe) => {
     const search = query.trim().toLowerCase();
     const matchesQuery =
       !search ||
@@ -57,12 +58,22 @@ export const SearchView: React.FC<Props> = ({
       recipe.ingredients.length <= maxIngredients
     );
   });
+  const filtered = [...filteredRecipes].sort((left, right) => {
+    if (sortOrder === "popular") {
+      return (right.favoriteCount || 0) - (left.favoriteCount || 0);
+    }
+    if (sortOrder === "newest") {
+      return new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime();
+    }
+    return 0;
+  });
 
   const clear = () => {
     setQuery("");
     setTag("ALL");
     setMaxTime(maxAvailableTime);
     setMaxIngredients(10);
+    setSortOrder("random");
   };
   const hasActiveFilters =
     query ||
@@ -136,6 +147,14 @@ export const SearchView: React.FC<Props> = ({
               <option value="Lunch">Lunch</option>
               <option value="Late Night">Late night</option>
               <option value="Breakfast">Breakfast</option>
+            </select>
+          </label>
+          <label>
+            Sort by
+            <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value as typeof sortOrder)}>
+              <option value="random">Random</option>
+              <option value="popular">Most popular</option>
+              <option value="newest">Newest</option>
             </select>
           </label>
           <label>

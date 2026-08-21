@@ -11,6 +11,7 @@ export interface Recipe {
   warningNote?: string;
   createdAt: string;
   createdByDisplayName?: string;
+  favoriteCount?: number;
   isUserUpload: boolean;
   inMyBox: boolean;
   servings: number;

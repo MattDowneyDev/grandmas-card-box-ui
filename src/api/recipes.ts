@@ -14,6 +14,7 @@ interface ApiRecipe {
   imageUrl?: string;
   warningNote?: string;
   createdAt: string;
+  favoriteCount?: number;
   isUserUpload: boolean;
   inMyBox: boolean;
   servings: number;
