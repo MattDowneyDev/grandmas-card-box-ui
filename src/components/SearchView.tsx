@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Search as SearchIcon, X } from "lucide-react";
 import { Recipe, ThemeMode } from "../types";
 import { RecipeCard } from "./RecipeCard";
@@ -17,11 +17,27 @@ export const SearchView: React.FC<Props> = ({
   onToggleMyBox,
 }) => {
   const dark = theme === "dark";
+  const maxAvailableTime = Math.max(
+    15,
+    Math.ceil(
+      Math.max(
+        0,
+        ...recipes.map(
+          (recipe) =>
+            recipe.totalTimeMin ??
+            (recipe.prepTimeMin || 0) + recipe.cookTimeMin,
+        ),
+      ) / 15,
+    ) * 15,
+  );
   const [query, setQuery] = useState("");
   const [tag, setTag] = useState("ALL");
-  const [maxTime, setMaxTime] = useState(480);
+  const [maxTime, setMaxTime] = useState(maxAvailableTime);
   const [maxIngredients, setMaxIngredients] = useState(10);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  useEffect(() => {
+    setMaxTime(maxAvailableTime);
+  }, [maxAvailableTime]);
   const filtered = recipes.filter((recipe) => {
     const search = query.trim().toLowerCase();
     const matchesQuery =
@@ -45,11 +61,14 @@ export const SearchView: React.FC<Props> = ({
   const clear = () => {
     setQuery("");
     setTag("ALL");
-    setMaxTime(480);
+    setMaxTime(maxAvailableTime);
     setMaxIngredients(10);
   };
   const hasActiveFilters =
-    query || tag !== "ALL" || maxTime < 480 || maxIngredients < 10;
+    query ||
+    tag !== "ALL" ||
+    maxTime < maxAvailableTime ||
+    maxIngredients < 10;
 
   const copyRecipe = (event: React.MouseEvent, recipe: Recipe) => {
     event.stopPropagation();
@@ -124,7 +143,7 @@ export const SearchView: React.FC<Props> = ({
             <input
               type="range"
               min="15"
-              max="480"
+              max={maxAvailableTime}
               step="15"
               value={maxTime}
               onChange={(event) => setMaxTime(Number(event.target.value))}
