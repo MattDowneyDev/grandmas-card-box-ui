@@ -98,7 +98,24 @@ export default function App() {
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<NavigationTab>(getTabFromPath);
 
+  // Modals
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+
+  // User state
+  const [userHandle, setUserHandle] = useState<string>(() => {
+    return localStorage.getItem("cardbox_user") || "CHEF_001";
+  });
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
+    return Boolean(localStorage.getItem("cardbox_token"));
+  });
+
   const handleTabChange = (tab: NavigationTab) => {
+    const requiresLogin = tab === "my-box" || tab === "upload";
+    if (requiresLogin && (!isLoggedIn || !authToken)) {
+      setIsLoginOpen(true);
+      return;
+    }
+
     if (tab in ROUTE_PATHS) {
       window.history.pushState(
         {},
@@ -115,6 +132,15 @@ export default function App() {
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
+  useEffect(() => {
+    const requiresLogin = activeTab === "my-box" || activeTab === "upload";
+    if (requiresLogin && (!isLoggedIn || !authToken)) {
+      window.history.replaceState({}, "", ROUTE_PATHS.search);
+      setActiveTab("search");
+      setIsLoginOpen(true);
+    }
+  }, [activeTab, authToken, isLoggedIn]);
+
   // Currently inspected recipe for detail modal
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
 
@@ -122,15 +148,6 @@ export default function App() {
   const [faqModalType, setFaqModalType] = useState<
     "faq" | "privacy" | "terms" | null
   >(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-
-  // User state
-  const [userHandle, setUserHandle] = useState<string>(() => {
-    return localStorage.getItem("cardbox_user") || "CHEF_001";
-  });
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
-    return Boolean(localStorage.getItem("cardbox_token"));
-  });
 
   // Persist recipes
   useEffect(() => {
@@ -164,6 +181,11 @@ export default function App() {
 
   // Toggle recipe bookmark in My Box
   const handleToggleMyBox = (recipeId: string) => {
+    if (!isLoggedIn || !authToken) {
+      setIsLoginOpen(true);
+      return;
+    }
+
     const recipe = recipes.find((item) => item.id === recipeId);
     if (!recipe) return;
 
@@ -190,6 +212,11 @@ export default function App() {
   const handleSaveRecipe = async (
     newRecipeData: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => {
+    if (!isLoggedIn || !authToken) {
+      setIsLoginOpen(true);
+      return;
+    }
+
     createRecipe(newRecipeData, authToken || undefined)
       .then((newRecipe) => {
         setRecipes((prev) => [newRecipe, ...prev]);
