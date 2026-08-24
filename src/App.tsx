@@ -240,12 +240,9 @@ export default function App() {
       setIsLoginOpen(true);
       return;
     }
-    createRecipe(newRecipeData, authToken || undefined)
-      .then((newRecipe) => {
-        setRecipes((prev) => [newRecipe, ...prev]);
-        handleTabChange("my-box");
-      })
-      .catch((error) => console.error("Failed to create recipe", error));
+    const newRecipe = await createRecipe(newRecipeData, authToken || undefined);
+    setRecipes((prev) => [newRecipe, ...prev]);
+    handleTabChange("my-box");
   };
 
   // Delete user-created recipe
@@ -357,7 +354,11 @@ export default function App() {
           )}
 
           {activeTab === "upload" && (
-            <UploadView theme={theme} onSaveRecipe={handleSaveRecipe} />
+            <UploadView
+              theme={theme}
+              onSaveRecipe={handleSaveRecipe}
+              authToken={authToken}
+            />
           )}
 
           {activeTab === "search" && (

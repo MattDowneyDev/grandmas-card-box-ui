@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import { AlertCircle, Camera, Check, Plus, Trash2 } from "lucide-react";
 import { Recipe, ThemeMode } from "../types";
 import { RECIPE_CATEGORIES } from "../data/categories";
+import { uploadRecipeImage } from "../api/uploads";
 
 interface Props {
   theme: ThemeMode;
   onSaveRecipe: (
     recipe: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
-  ) => void;
+  ) => Promise<void>;
+  authToken: string | null;
 }
-export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
+export const UploadView: React.FC<Props> = ({
+  theme,
+  onSaveRecipe,
+  authToken,
+}) => {
   const [title, setTitle] = useState("");
   const [tag, setTag] = useState("");
   const [servings, setServings] = useState<number | "">("");
@@ -21,6 +27,9 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
   const [warningNote, setWarningNote] = useState("");
   const [notice, setNotice] = useState("");
   const [validationMessage, setValidationMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const addLine = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
     setter((lines) => [...lines, ""]);
   const updateLine = (
@@ -40,7 +49,7 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
         ? lines.filter((_, lineIndex) => lineIndex !== index)
         : lines,
     );
-  const submit = (event: React.FormEvent) => {
+  const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     const missingField = !title.trim()
       ? "recipe name"
@@ -66,22 +75,36 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
     }
 
     setValidationMessage("");
+    setErrorMessage("");
     const prepTime = Number(prep) || 0;
     const cookTime = Number(cook) || 0;
     const cleanTitle = title.trim().toUpperCase() || "UNTITLED RECIPE";
-    onSaveRecipe({
-      title: cleanTitle,
-      tag: tag || "Uncategorized",
-      servings: Number(servings) || 1,
-      prepTimeMin: prepTime,
-      cookTimeMin: cookTime,
-      totalTimeMin: prepTime + cookTime,
-      ingredients: ingredients.map((line) => line.trim()).filter(Boolean),
-      instructions: instructions.map((line) => line.trim()).filter(Boolean),
-      imageUrl: imageUrl || undefined,
-      warningNote: warningNote.trim() || undefined,
-      inMyBox: true,
-    });
+
+    setIsSaving(true);
+    try {
+      await onSaveRecipe({
+        title: cleanTitle,
+        tag: tag || "Uncategorized",
+        servings: Number(servings) || 1,
+        prepTimeMin: prepTime,
+        cookTimeMin: cookTime,
+        totalTimeMin: prepTime + cookTime,
+        ingredients: ingredients.map((line) => line.trim()).filter(Boolean),
+        instructions: instructions.map((line) => line.trim()).filter(Boolean),
+        imageUrl: imageUrl || undefined,
+        warningNote: warningNote.trim() || undefined,
+        inMyBox: true,
+      });
+    } catch (error) {
+      console.error("Failed to save recipe", error);
+      setErrorMessage(
+        "We couldn't save that recipe. Please try again, or use a smaller photo.",
+      );
+      return;
+    } finally {
+      setIsSaving(false);
+    }
+
     setNotice(`${cleanTitle} was added to your box.`);
     setTitle("");
     setTag("");
@@ -94,12 +117,22 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
     setWarningNote("");
     setTimeout(() => setNotice(""), 3500);
   };
-  const readImage = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const readImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setImageUrl(String(reader.result));
-    reader.readAsDataURL(file);
+
+    setErrorMessage("");
+    setIsUploadingImage(true);
+    try {
+      const publicUrl = await uploadRecipeImage(file, authToken || undefined);
+      setImageUrl(publicUrl);
+    } catch (error) {
+      console.error("Failed to upload image", error);
+      setErrorMessage("We couldn't upload that photo. Please try again.");
+    } finally {
+      setIsUploadingImage(false);
+    }
   };
   return (
     <div className={`modern-page ${theme === "dark" ? "is-dark" : ""}`}>
@@ -118,6 +151,11 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
       {validationMessage && (
         <div className="modern-notice modern-notice-error" role="alert">
           <AlertCircle /> {validationMessage}
+        </div>
+      )}
+      {errorMessage && (
+        <div className="modern-notice modern-notice-error" role="alert">
+          <AlertCircle /> {errorMessage}
         </div>
       )}
       <form className="modern-form" onSubmit={submit} noValidate>
@@ -216,8 +254,18 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
             </div>
           )}
           <label className="modern-button secondary">
-            <Camera /> {imageUrl ? "Change photo" : "Choose photo"}
-            <input type="file" accept="image/*" onChange={readImage} />
+            <Camera />{" "}
+            {isUploadingImage
+              ? "Uploading..."
+              : imageUrl
+                ? "Change photo"
+                : "Choose photo"}
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={readImage}
+              disabled={isUploadingImage}
+            />
           </label>
         </div>
         <label className="warning-input">
@@ -229,8 +277,12 @@ export const UploadView: React.FC<Props> = ({ theme, onSaveRecipe }) => {
             rows={3}
           />
         </label>
-        <button className="modern-button submit-button" type="submit">
-          <Plus /> Save recipe
+        <button
+          className="modern-button submit-button"
+          type="submit"
+          disabled={isSaving || isUploadingImage}
+        >
+          <Plus /> {isSaving ? "Saving..." : "Save recipe"}
         </button>
       </form>
     </div>
