@@ -32,9 +32,10 @@ import { LoginModal } from "./components/LoginModal";
 import { PasswordResetView } from "./components/PasswordResetView";
 import { Footer } from "./components/Footer";
 
-const ROUTE_PATHS: Record<"my-box" | "search" | "upload", string> = {
+const HOME_PATH = "/";
+
+const ROUTE_PATHS: Record<"my-box" | "upload", string> = {
   "my-box": "/my-box",
-  search: "/search",
   upload: "/upload",
 };
 
@@ -120,12 +121,8 @@ export default function App() {
       return;
     }
 
-    if (tab in ROUTE_PATHS) {
-      window.history.pushState(
-        {},
-        "",
-        ROUTE_PATHS[tab as "my-box" | "search" | "upload"],
-      );
+    if (tab === "my-box" || tab === "upload") {
+      window.history.pushState({}, "", ROUTE_PATHS[tab]);
     }
     setActiveTab(tab);
   };
@@ -133,7 +130,7 @@ export default function App() {
   useEffect(() => {
     const requiresLogin = activeTab === "my-box" || activeTab === "upload";
     if (requiresLogin && (!isLoggedIn || !authToken)) {
-      window.history.replaceState({}, "", ROUTE_PATHS.search);
+      window.history.replaceState({}, "", HOME_PATH);
       setActiveTab("search");
       setIsLoginOpen(true);
     }
@@ -159,7 +156,7 @@ export default function App() {
     const handlePopState = () => {
       if (selectedRecipe) {
         setSelectedRecipe(null);
-        window.history.replaceState({}, "", ROUTE_PATHS.search);
+        window.history.replaceState({}, "", HOME_PATH);
         setActiveTab("search");
         window.requestAnimationFrame(() => {
           window.scrollTo({
@@ -315,7 +312,7 @@ export default function App() {
         theme={theme}
         token={resetToken || ""}
         onBackToLogin={() => {
-          window.history.replaceState({}, "", ROUTE_PATHS.search);
+          window.history.replaceState({}, "", HOME_PATH);
           setActiveTab("search");
           setIsLoginOpen(true);
         }}
