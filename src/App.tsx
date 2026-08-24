@@ -4,6 +4,8 @@
  */
 
 import React, { useRef, useState, useEffect } from "react";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import { INITIAL_RECIPES } from "./data/initialRecipes";
 import {
@@ -329,6 +331,8 @@ export default function App() {
           : "bg-[#f7f1e7] text-[#332c24]"
       }`}
     >
+      <Analytics />
+      <SpeedInsights />
       {/* Navigation Sidebar & Header */}
       <Header
         activeTab={activeTab}
