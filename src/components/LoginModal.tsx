@@ -124,8 +124,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setSuccessMessage(null);
 
     try {
-      const displayNameChanged =
-        accountDisplayName.trim().toUpperCase() !== userHandle;
+      const displayNameChanged = accountDisplayName.trim() !== userHandle;
       const passwordChanged = Boolean(newPasswordInput);
       if (!displayNameChanged && !passwordChanged) {
         throw new Error("Make a change before saving your account.");
@@ -349,8 +348,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   required
                   value={displayNameInput}
                   onChange={(e) => setDisplayNameInput(e.target.value)}
-                  placeholder="e.g. CHEF_001"
-                  className={`w-full mb-3 p-2.5 font-mono text-xs border uppercase tracking-wider ${
+                  placeholder="e.g. Chef_001"
+                  className={`w-full mb-3 p-2.5 font-mono text-xs border tracking-wider ${
                     isDark
                       ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
                       : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
@@ -369,7 +368,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="chef@example.com"
-                className={`w-full p-2.5 font-mono text-xs border uppercase tracking-wider ${
+                className={`w-full p-2.5 font-mono text-xs border tracking-wider ${
                   isDark
                     ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
                     : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
