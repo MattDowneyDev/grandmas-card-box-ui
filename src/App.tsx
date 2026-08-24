@@ -68,9 +68,9 @@ export default function App() {
 
     getCurrentUser(authToken)
       .then((user) => {
-        setUserHandle(user.displayName.toUpperCase());
+        setUserHandle(user.displayName);
         setIsLoggedIn(true);
-        localStorage.setItem("cardbox_user", user.displayName.toUpperCase());
+        localStorage.setItem("cardbox_user", user.displayName);
       })
       .catch((error) => {
         console.error("Failed to validate API session", error);
@@ -108,7 +108,7 @@ export default function App() {
 
   // User state
   const [userHandle, setUserHandle] = useState<string>(() => {
-    return localStorage.getItem("cardbox_user") || "CHEF_001";
+    return localStorage.getItem("cardbox_user") || "Chef_001";
   });
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return Boolean(localStorage.getItem("cardbox_token"));
@@ -264,15 +264,15 @@ export default function App() {
 
   const handleLogin = async (session: AuthSession) => {
     setAuthToken(session.token);
-    setUserHandle(session.displayName.toUpperCase());
+    setUserHandle(session.displayName);
     setIsLoggedIn(true);
     localStorage.setItem("cardbox_token", session.token);
-    localStorage.setItem("cardbox_user", session.displayName.toUpperCase());
+    localStorage.setItem("cardbox_user", session.displayName);
     localStorage.setItem("cardbox_auth", "true");
   };
 
   const handleLogout = () => {
-    setUserHandle("GUEST_CHEF");
+    setUserHandle("Guest chef");
     setIsLoggedIn(false);
     setAuthToken(null);
     setSelectedRecipe(null);
@@ -296,8 +296,8 @@ export default function App() {
   }) => {
     if (!authToken) return;
     const user = await updateAccount(authToken, updates);
-    setUserHandle(user.displayName.toUpperCase());
-    localStorage.setItem("cardbox_user", user.displayName.toUpperCase());
+    setUserHandle(user.displayName);
+    localStorage.setItem("cardbox_user", user.displayName);
   };
 
   const myBoxRecipes = recipes.filter(
