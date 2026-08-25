@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { ThemeMode } from "../types";
-import { ChefHat, X, UserCheck } from "lucide-react";
+import { ChefHat, X, UserCheck, MailWarning, AlertCircle, Check } from "lucide-react";
 import { AuthSession } from "../api/auth";
 
 interface LoginModalProps {
@@ -8,6 +8,7 @@ interface LoginModalProps {
   theme: ThemeMode;
   userHandle: string;
   isLoggedIn: boolean;
+  isEmailVerified: boolean;
   onClose: () => void;
   onLogin: (session: AuthSession) => void;
   onLoginWithPassword: (
@@ -20,6 +21,7 @@ interface LoginModalProps {
     displayName: string,
   ) => Promise<AuthSession>;
   onRequestPasswordReset: (email: string) => Promise<void>;
+  onResendVerification: () => Promise<void>;
   onDeleteAccount: () => Promise<void>;
   onUpdateAccount: (updates: {
     displayName?: string;
@@ -34,11 +36,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   theme,
   userHandle,
   isLoggedIn,
+  isEmailVerified,
   onClose,
   onLogin,
   onLoginWithPassword,
   onSignup,
   onRequestPasswordReset,
+  onResendVerification,
   onDeleteAccount,
   onUpdateAccount,
   onLogout,
@@ -59,6 +63,23 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [accountDisplayName, setAccountDisplayName] = useState(userHandle);
   const [currentPasswordInput, setCurrentPasswordInput] = useState("");
   const [newPasswordInput, setNewPasswordInput] = useState("");
+  const [isResendingVerification, setIsResendingVerification] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState<string | null>(null);
+
+  const handleResendVerification = async () => {
+    setIsResendingVerification(true);
+    setVerificationMessage(null);
+    try {
+      await onResendVerification();
+      setVerificationMessage("Verification email sent. Check your inbox.");
+    } catch (error) {
+      setVerificationMessage(
+        error instanceof Error ? error.message : "Failed to resend verification email",
+      );
+    } finally {
+      setIsResendingVerification(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,7 +105,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           )
         : await onLoginWithPassword(emailInput.trim(), passwordInput);
       onLogin(session);
-      onClose();
+      // Stay open after signup so the account panel's verification banner is
+      // the first thing the new user sees — don't let it slip by unnoticed.
+      if (!isSignup) onClose();
     } catch (error) {
       setErrorMessage(
         error instanceof Error ? error.message : "Authentication failed",
@@ -165,14 +188,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       <div
         id="auth-modal"
         onClick={(event) => event.stopPropagation()}
-        className={`relative w-full max-w-md border p-6 md:p-8 font-mono ${
+        className={`relative w-full max-w-md border p-6 md:p-8 ${
           isDark
             ? "bg-[#050b14] border-[#1e3a8a] text-white"
             : "bg-[#fcf9f8] border-[#001255] text-[#1b1c1c] brutalist-shadow"
         }`}
       >
-        <div className="flex items-center justify-between border-b pb-3 mb-6 border-current">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between border-b pb-4 mb-6 border-current/15">
+          <div className="flex items-center gap-3">
             <span className="auth-modal-icon">
               <ChefHat className="h-5 w-5" />
             </span>
@@ -188,7 +211,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className={`p-1 border ${
+            className={`p-1.5 border rounded-full transition-opacity hover:opacity-70 ${
               isDark
                 ? "border-[#1e3a8a] text-white"
                 : "border-[#001255] text-[#001255]"
@@ -200,19 +223,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {isLoggedIn ? (
           <div className="space-y-4">
-            <div className="flex items-center gap-3 p-3 border border-green-600/40 bg-green-500/10">
-              <UserCheck className="w-5 h-5 text-green-500 shrink-0" />
+            <div className="flex items-center gap-3 p-3.5 rounded-2xl border border-green-600/30 bg-green-500/10">
+              <UserCheck className="w-5 h-5 text-green-600 dark:text-green-400 shrink-0" />
               <div>
-                <div className="text-xs uppercase font-bold text-green-600 dark:text-green-400">
-                  LOGGED IN AS
+                <div className="text-xs font-semibold uppercase tracking-wide text-green-700 dark:text-green-400 opacity-80">
+                  Logged in as
                 </div>
-                <div className="text-sm font-bold font-mono">{userHandle}</div>
+                <div className="text-sm font-semibold">{userHandle}</div>
               </div>
             </div>
 
-            <p className="text-xs opacity-80 leading-relaxed">
+            <p className="text-sm opacity-80 leading-relaxed">
               Your uploaded and favorited recipes are saved automatically.
             </p>
+
+            {!isEmailVerified && (
+              <div className="flex items-start gap-3 p-3.5 rounded-2xl border border-amber-500/30 bg-amber-500/10">
+                <MailWarning className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-2.5">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-amber-700 dark:text-amber-400 opacity-80">
+                    Email not verified
+                  </div>
+                  <p className="text-sm opacity-80 leading-relaxed">
+                    Verify your email to favorite recipes, upload your own, and use My Box.
+                    Check your inbox for a confirmation link, or resend it below.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={isResendingVerification}
+                    className="modern-button secondary disabled:opacity-50"
+                  >
+                    {isResendingVerification ? "Sending..." : "Resend verification email"}
+                  </button>
+                  {verificationMessage && (
+                    <p className="text-sm opacity-80">{verificationMessage}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {isEditingAccount ? (
               <form
@@ -220,7 +269,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 className="account-edit-form"
               >
                 <label>
-                  DISPLAY NAME
+                  Display name
                   <input
                     type="text"
                     required
@@ -234,7 +283,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </label>
                 <div className="account-password-fields">
                   <label>
-                    CURRENT PASSWORD
+                    Current password
                     <input
                       type="password"
                       value={currentPasswordInput}
@@ -245,7 +294,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     />
                   </label>
                   <label>
-                    NEW PASSWORD
+                    New password
                     <input
                       type="password"
                       minLength={8}
@@ -296,52 +345,50 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             )}
 
             {errorMessage && (
-              <div className="border border-red-600 p-2 text-xs text-red-500">
-                {errorMessage}
+              <div className="modern-notice modern-notice-error" role="alert">
+                <AlertCircle /> {errorMessage}
               </div>
             )}
 
-            <div className="flex flex-wrap gap-3 pt-4 border-t border-current/20">
+            <div className="flex flex-wrap gap-3 pt-4 border-t border-current/15">
               <button
                 type="button"
                 onClick={onLogout}
-                className="flex-1 min-w-[120px] py-2 text-xs font-bold uppercase border border-red-600 text-red-600 hover:bg-red-500/10"
+                className="flex-1 min-w-[120px] py-2.5 text-sm font-semibold border border-red-600 text-red-600 hover:bg-red-500/10"
               >
-                LOG OUT
+                Log out
               </button>
               <button
                 type="button"
                 onClick={handleDeleteAccount}
                 disabled={isDeleting}
-                className="flex-1 min-w-[120px] py-2 text-xs font-bold uppercase border border-red-900 text-red-900 hover:bg-red-900/10 disabled:opacity-50"
+                className="flex-1 min-w-[120px] py-2.5 text-sm font-semibold border border-red-900 text-red-900 hover:bg-red-900/10 disabled:opacity-50"
               >
-                {isDeleting ? "DELETING..." : "DELETE ACCOUNT"}
+                {isDeleting ? "Deleting..." : "Delete account"}
               </button>
               <button
                 type="button"
                 onClick={onClose}
-                className={`flex-1 min-w-[120px] py-2 text-xs font-bold uppercase ${
-                  isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"
-                }`}
+                className="modern-button flex-1 min-w-[120px]"
               >
-                DONE
+                Done
               </button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-xs opacity-80 leading-relaxed">
+            <p className="text-sm opacity-80 leading-relaxed">
               {isForgotPassword
                 ? "Enter your email and we will send a password reset link if an account exists."
                 : isSignup
-                  ? "Create an account to add favorites to your card box. Don't worry, we won't spam you. We just need your email to send you a password reset link if you forget it."
+                  ? "Create an account to add favorites to your card box. Don't worry, we won't spam you. We'll email you a link to verify your address — you'll need to confirm it before you can favorite, upload, or use My Box."
                   : "Log in to add favorites to your card box."}
             </p>
 
             {!isForgotPassword && isSignup && (
               <div>
-                <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
-                  DISPLAY NAME
+                <label className="block text-sm font-semibold mb-1.5 opacity-90">
+                  Display name
                 </label>
                 <input
                   type="text"
@@ -349,18 +396,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   value={displayNameInput}
                   onChange={(e) => setDisplayNameInput(e.target.value)}
                   placeholder="e.g. Chef_001"
-                  className={`w-full mb-3 p-2.5 font-mono text-xs border tracking-wider ${
-                    isDark
-                      ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
-                      : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
-                  }`}
+                  className="w-full mb-3 p-3 text-sm border bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
                 />
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
-                EMAIL
+              <label className="block text-sm font-semibold mb-1.5 opacity-90">
+                Email
               </label>
               <input
                 type="email"
@@ -368,18 +411,14 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="chef@example.com"
-                className={`w-full p-2.5 font-mono text-xs border tracking-wider ${
-                  isDark
-                    ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
-                    : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
-                }`}
+                className="w-full p-3 text-sm border bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
               />
             </div>
 
             {!isForgotPassword && (
               <div>
-                <label className="block text-xs font-bold uppercase mb-1.5 opacity-90">
-                  PASSWORD
+                <label className="block text-sm font-semibold mb-1.5 opacity-90">
+                  Password
                 </label>
                 <input
                   type="password"
@@ -387,33 +426,29 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   minLength={8}
                   value={passwordInput}
                   onChange={(e) => setPasswordInput(e.target.value)}
-                  className={`w-full p-2.5 font-mono text-xs border ${
-                    isDark
-                      ? "bg-[#030712] border-[#1e3a8a] text-white focus:border-[#3b82f6]"
-                      : "bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
-                  }`}
+                  className="w-full p-3 text-sm border bg-white border-[#001255] text-[#001255] focus:border-[#001255]"
                 />
               </div>
             )}
 
             {errorMessage && (
-              <div className="border border-red-600 p-2 text-xs text-red-500">
-                {errorMessage}
+              <div className="modern-notice modern-notice-error" role="alert">
+                <AlertCircle /> {errorMessage}
               </div>
             )}
             {successMessage && (
-              <div className="border border-green-600 p-2 text-xs text-green-600">
-                {successMessage}
+              <div className="modern-notice">
+                <Check /> {successMessage}
               </div>
             )}
 
-            <div className="pt-2 flex justify-end gap-3">
+            <div className="pt-2 flex flex-wrap justify-end gap-3">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                className="modern-button secondary"
               >
-                CANCEL
+                Cancel
               </button>
               {!isForgotPassword && (
                 <button
@@ -423,9 +458,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     setErrorMessage(null);
                     setSuccessMessage(null);
                   }}
-                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                  className="modern-button secondary"
                 >
-                  {isSignup ? "HAVE AN ACCOUNT" : "CREATE ACCOUNT"}
+                  {isSignup ? "I have an account" : "Create account"}
                 </button>
               )}
               {!isSignup && !isForgotPassword && (
@@ -436,9 +471,9 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     setErrorMessage(null);
                     setSuccessMessage(null);
                   }}
-                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                  className="modern-button secondary"
                 >
-                  FORGOT PASSWORD
+                  Forgot password?
                 </button>
               )}
               {isForgotPassword && (
@@ -449,25 +484,23 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     setErrorMessage(null);
                     setSuccessMessage(null);
                   }}
-                  className="px-3 py-2 text-xs uppercase border border-current/40 hover:bg-black/5"
+                  className="modern-button secondary"
                 >
-                  BACK TO LOGIN
+                  Back to login
                 </button>
               )}
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`px-5 py-2 text-xs font-bold uppercase ${
-                  isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"
-                }`}
+                className="modern-button"
               >
                 {isSubmitting
-                  ? "SENDING..."
+                  ? "Sending..."
                   : isForgotPassword
-                    ? "SEND LINK"
+                    ? "Send reset link"
                     : isSignup
-                      ? "SIGN UP"
-                      : "LOG IN"}
+                      ? "Sign up"
+                      : "Log in"}
               </button>
             </div>
           </form>

@@ -14,6 +14,7 @@ import {
   getCurrentUser,
   login,
   requestPasswordReset,
+  resendVerification,
   signup,
   updateAccount,
 } from "./api/auth";
@@ -30,6 +31,7 @@ import { SearchView } from "./components/SearchView";
 import { RecipeModal } from "./components/RecipeModal";
 import { LoginModal } from "./components/LoginModal";
 import { PasswordResetView } from "./components/PasswordResetView";
+import { VerifyEmailView } from "./components/VerifyEmailView";
 import { Footer } from "./components/Footer";
 
 const HOME_PATH = "/";
@@ -70,6 +72,7 @@ export default function App() {
       .then((user) => {
         setUserHandle(user.displayName);
         setIsLoggedIn(true);
+        setIsEmailVerified(user.emailVerified);
         localStorage.setItem("cardbox_user", user.displayName);
       })
       .catch((error) => {
@@ -113,10 +116,11 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(() => {
     return Boolean(localStorage.getItem("cardbox_token"));
   });
+  const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
 
   const handleTabChange = (tab: NavigationTab) => {
     const requiresLogin = tab === "my-box" || tab === "upload";
-    if (requiresLogin && (!isLoggedIn || !authToken)) {
+    if (requiresLogin && (!isLoggedIn || !authToken || !isEmailVerified)) {
       setIsLoginOpen(true);
       return;
     }
@@ -129,12 +133,12 @@ export default function App() {
 
   useEffect(() => {
     const requiresLogin = activeTab === "my-box" || activeTab === "upload";
-    if (requiresLogin && (!isLoggedIn || !authToken)) {
+    if (requiresLogin && (!isLoggedIn || !authToken || !isEmailVerified)) {
       window.history.replaceState({}, "", HOME_PATH);
       setActiveTab("search");
       setIsLoginOpen(true);
     }
-  }, [activeTab, authToken, isLoggedIn]);
+  }, [activeTab, authToken, isLoggedIn, isEmailVerified]);
 
   // Currently inspected recipe for detail modal
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
@@ -205,7 +209,7 @@ export default function App() {
 
   // Toggle recipe bookmark in My Box
   const handleToggleMyBox = (recipeId: string) => {
-    if (!isLoggedIn || !authToken) {
+    if (!isLoggedIn || !authToken || !isEmailVerified) {
       setIsLoginOpen(true);
       return;
     }
@@ -236,7 +240,7 @@ export default function App() {
   const handleSaveRecipe = async (
     newRecipeData: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => {
-    if (!isLoggedIn || !authToken) {
+    if (!isLoggedIn || !authToken || !isEmailVerified) {
       setIsLoginOpen(true);
       return;
     }
@@ -247,7 +251,7 @@ export default function App() {
 
   // Delete user-created recipe
   const handleDeleteRecipe = (recipeId: string) => {
-    if (!isLoggedIn || !authToken) return;
+    if (!isLoggedIn || !authToken || !isEmailVerified) return;
 
     deleteRecipe(recipeId, authToken)
       .then(() => {
@@ -263,6 +267,7 @@ export default function App() {
     setAuthToken(session.token);
     setUserHandle(session.displayName);
     setIsLoggedIn(true);
+    setIsEmailVerified(session.emailVerified);
     localStorage.setItem("cardbox_token", session.token);
     localStorage.setItem("cardbox_user", session.displayName);
     localStorage.setItem("cardbox_auth", "true");
@@ -271,10 +276,16 @@ export default function App() {
   const handleLogout = () => {
     setUserHandle("Guest chef");
     setIsLoggedIn(false);
+    setIsEmailVerified(false);
     setAuthToken(null);
     setSelectedRecipe(null);
     localStorage.removeItem("cardbox_token");
     localStorage.removeItem("cardbox_auth");
+  };
+
+  const handleResendVerification = async () => {
+    if (!authToken) return;
+    await resendVerification(authToken);
   };
 
   const handleDeleteAccount = async () => {
@@ -301,13 +312,27 @@ export default function App() {
     (recipe) => recipe.isUserUpload || recipe.inMyBox,
   );
   const myBoxCount = myBoxRecipes.length;
-  const resetToken = new URLSearchParams(window.location.search).get("token");
+  const queryToken = new URLSearchParams(window.location.search).get("token");
 
   if (window.location.pathname === "/reset-password") {
     return (
       <PasswordResetView
         theme={theme}
-        token={resetToken || ""}
+        token={queryToken || ""}
+        onBackToLogin={() => {
+          window.history.replaceState({}, "", HOME_PATH);
+          setActiveTab("search");
+          setIsLoginOpen(true);
+        }}
+      />
+    );
+  }
+
+  if (window.location.pathname === "/verify-email") {
+    return (
+      <VerifyEmailView
+        theme={theme}
+        token={queryToken || ""}
         onBackToLogin={() => {
           window.history.replaceState({}, "", HOME_PATH);
           setActiveTab("search");
@@ -393,11 +418,13 @@ export default function App() {
           theme={theme}
           userHandle={userHandle}
           isLoggedIn={isLoggedIn}
+          isEmailVerified={isEmailVerified}
           onClose={() => setIsLoginOpen(false)}
           onLogin={handleLogin}
           onLoginWithPassword={login}
           onSignup={signup}
           onRequestPasswordReset={requestPasswordReset}
+          onResendVerification={handleResendVerification}
           onDeleteAccount={handleDeleteAccount}
           onUpdateAccount={handleUpdateAccount}
           onLogout={handleLogout}

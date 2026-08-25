@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Key } from "lucide-react";
+import { AlertCircle, Key } from "lucide-react";
 import { resetPassword } from "../api/auth";
 import { ThemeMode } from "../types";
 
@@ -51,66 +51,66 @@ export const PasswordResetView: React.FC<PasswordResetViewProps> = ({
       className={`min-h-screen flex items-center justify-center p-4 ${isDark ? "bg-[#030712] text-white" : "bg-[#dcd9d9] text-[#1b1c1c]"}`}
     >
       <div
-        className={`w-full max-w-md border p-6 md:p-8 font-mono ${isDark ? "bg-[#050b14] border-[#1e3a8a]" : "bg-[#fcf9f8] border-[#001255] brutalist-shadow"}`}
+        id="auth-modal"
+        className={`w-full max-w-md border p-6 md:p-8 ${isDark ? "bg-[#050b14] border-[#1e3a8a]" : "bg-[#fcf9f8] border-[#001255] brutalist-shadow"}`}
       >
-        <div className="flex items-center gap-2 border-b pb-3 mb-6 border-current">
-          <Key className="w-5 h-5 text-blue-600" />
-          <h1 className="text-lg font-bold uppercase font-heading">
-            RESET PASSWORD
+        <div className="flex items-center gap-3 border-b pb-4 mb-6 border-current/15">
+          <span className="auth-modal-icon">
+            <Key className="w-5 h-5" />
+          </span>
+          <h1 className="text-xl font-bold font-heading tracking-tight">
+            Reset password
           </h1>
         </div>
 
         {isComplete ? (
           <div className="space-y-5">
-            <p className="text-sm">
+            <p className="text-sm leading-relaxed">
               Your password has been updated. You can now log in with the new
               password.
             </p>
-            <button
-              onClick={onBackToLogin}
-              className={`w-full py-2 text-xs font-bold uppercase ${isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"}`}
-            >
-              RETURN TO LOGIN
+            <button onClick={onBackToLogin} className="modern-button w-full">
+              Return to login
             </button>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            <p className="text-xs opacity-80">
+            <p className="text-sm opacity-80 leading-relaxed">
               Choose a new password for your account.
             </p>
-            <label className="block text-xs font-bold uppercase">
-              NEW PASSWORD
+            <label className="block text-sm font-semibold opacity-90">
+              New password
               <input
                 type="password"
                 required
                 minLength={8}
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
-                className={`w-full mt-1 p-2.5 text-xs border ${isDark ? "bg-[#030712] border-[#1e3a8a]" : "bg-white border-[#001255]"}`}
+                className="w-full mt-1.5 p-3 text-sm border bg-white border-[#001255]"
               />
             </label>
-            <label className="block text-xs font-bold uppercase">
-              CONFIRM PASSWORD
+            <label className="block text-sm font-semibold opacity-90">
+              Confirm password
               <input
                 type="password"
                 required
                 minLength={8}
                 value={confirmation}
                 onChange={(event) => setConfirmation(event.target.value)}
-                className={`w-full mt-1 p-2.5 text-xs border ${isDark ? "bg-[#030712] border-[#1e3a8a]" : "bg-white border-[#001255]"}`}
+                className="w-full mt-1.5 p-3 text-sm border bg-white border-[#001255]"
               />
             </label>
             {errorMessage && (
-              <div className="border border-red-600 p-2 text-xs text-red-500">
-                {errorMessage}
+              <div className="modern-notice modern-notice-error" role="alert">
+                <AlertCircle /> {errorMessage}
               </div>
             )}
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full py-2 text-xs font-bold uppercase disabled:opacity-50 ${isDark ? "bg-[#1e3a8a] text-white" : "bg-[#001255] text-white"}`}
+              className="modern-button w-full disabled:opacity-50"
             >
-              {isSubmitting ? "UPDATING..." : "UPDATE PASSWORD"}
+              {isSubmitting ? "Updating..." : "Update password"}
             </button>
           </form>
         )}

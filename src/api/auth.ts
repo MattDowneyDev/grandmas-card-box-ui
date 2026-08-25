@@ -4,6 +4,7 @@ export interface AuthSession {
   token: string;
   displayName: string;
   email: string;
+  emailVerified: boolean;
 }
 
 interface AuthResponse {
@@ -11,17 +12,18 @@ interface AuthResponse {
   user?: {
     displayName: string;
     email: string;
+    emailVerified: boolean;
   };
 }
 
 export async function getCurrentUser(
   token: string,
-): Promise<{ email: string; displayName: string }> {
+): Promise<{ email: string; displayName: string; emailVerified: boolean }> {
   const response = await fetch(`${API_BASE_URL}/auth/me`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   const payload = (await response.json()) as {
-    user?: { email: string; displayName: string };
+    user?: { email: string; displayName: string; emailVerified: boolean };
     error?: string;
   };
 
@@ -51,6 +53,7 @@ async function authenticate(
     token: payload.token,
     email: payload.user?.email || body.email,
     displayName: payload.user?.displayName || body.displayName || body.email,
+    emailVerified: payload.user?.emailVerified ?? false,
   };
 }
 
@@ -87,6 +90,29 @@ export async function resetPassword(token: string, password: string): Promise<vo
   const payload = (await response.json()) as { error?: string };
   if (!response.ok) {
     throw new Error(payload.error || `Password reset failed (${response.status})`);
+  }
+}
+
+export async function verifyEmail(token: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ token }),
+  });
+  const payload = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(payload.error || `Email verification failed (${response.status})`);
+  }
+}
+
+export async function resendVerification(token: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/auth/resend-verification`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const payload = (await response.json()) as { error?: string };
+  if (!response.ok) {
+    throw new Error(payload.error || `Failed to resend verification email (${response.status})`);
   }
 }
 

@@ -476,6 +476,17 @@ button {
   outline: 3px solid rgba(168, 75, 42, .12);
 }
 
+.dark #auth-modal input {
+  border-color: #5f503b;
+  background: #302a24;
+  color: #f7f1e7;
+}
+
+.dark #auth-modal input:focus {
+  border-color: #f5cc75;
+  outline-color: rgba(245, 204, 117, .14);
+}
+
 #recipe-index-card-modal button,
 #auth-modal button {
   border-radius: 999px;
