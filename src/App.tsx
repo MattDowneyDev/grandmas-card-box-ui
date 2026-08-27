@@ -32,6 +32,7 @@ import { LoginModal } from "./components/LoginModal";
 import { PasswordResetView } from "./components/PasswordResetView";
 import { VerifyEmailView } from "./components/VerifyEmailView";
 import { Footer } from "./components/Footer";
+import { FeedbackWidget } from "./components/FeedbackWidget";
 
 const HOME_PATH = "/";
 
@@ -459,6 +460,8 @@ export default function App() {
           onLogout={handleLogout}
         />
       )}
+
+      <FeedbackWidget theme={theme} authToken={authToken} />
     </div>
   );
 }
