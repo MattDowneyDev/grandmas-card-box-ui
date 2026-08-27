@@ -281,7 +281,9 @@ button {
 .line-editor { border-top: 1px solid #eadfce; padding-top: 16px; }
 .editor-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 .editor-heading h2 { color: #6f3f27; font-size: 1.1rem; }
+.editor-heading .line-count { color: #b18d5c; font-size: .7rem; font-weight: 400; }
 .editor-heading button { display: flex; align-items: center; gap: 4px; border: 0; background: transparent; color: #a84b2a; font-size: .72rem; font-weight: 700; }
+.editor-heading button:disabled { color: #d8c6ab; cursor: not-allowed; }
 .editor-heading svg { width: 14px; }
 .editor-line { display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #eadfce; padding: 8px 0; }
 .editor-line span { width: 22px; color: #b18d5c; font-size: .75rem; }
@@ -607,11 +609,9 @@ button {
     background: white !important;
     color: black !important;
     overflow: visible !important;
-    height: 10in !important;
-    max-height: 10in !important;
+    min-height: 10in !important;
     font-size: 8.5pt !important;
     line-height: 1.2 !important;
-    overflow: hidden !important;
   }
 
   #recipe-index-card-modal > div:first-child {

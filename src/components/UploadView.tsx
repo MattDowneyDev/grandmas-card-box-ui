@@ -4,6 +4,13 @@ import { Recipe, ThemeMode } from "../types";
 import { RECIPE_CATEGORIES } from "../data/categories";
 import { uploadRecipeImage } from "../api/uploads";
 
+const MAX_LINES = 10;
+const MAX_TITLE_LENGTH = 80;
+const MAX_LINE_LENGTH = 120;
+const MAX_WARNING_LENGTH = 200;
+const MAX_SERVINGS = 99;
+const MAX_MINUTES = 480;
+
 interface Props {
   theme: ThemeMode;
   onSaveRecipe: (
@@ -31,7 +38,9 @@ export const UploadView: React.FC<Props> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const addLine = (setter: React.Dispatch<React.SetStateAction<string[]>>) =>
-    setter((lines) => [...lines, ""]);
+    setter((lines) =>
+      lines.length >= MAX_LINES ? lines : [...lines, ""],
+    );
   const updateLine = (
     setter: React.Dispatch<React.SetStateAction<string[]>>,
     index: number,
@@ -76,23 +85,32 @@ export const UploadView: React.FC<Props> = ({
 
     setValidationMessage("");
     setErrorMessage("");
-    const prepTime = Number(prep) || 0;
-    const cookTime = Number(cook) || 0;
-    const cleanTitle = title.trim().toUpperCase() || "UNTITLED RECIPE";
+    const prepTime = Math.min(Number(prep) || 0, MAX_MINUTES);
+    const cookTime = Math.min(Number(cook) || 0, MAX_MINUTES);
+    const cleanTitle =
+      title.trim().slice(0, MAX_TITLE_LENGTH).toUpperCase() ||
+      "UNTITLED RECIPE";
 
     setIsSaving(true);
     try {
       await onSaveRecipe({
         title: cleanTitle,
         tag: tag || "Uncategorized",
-        servings: Number(servings) || 1,
+        servings: Math.min(Number(servings) || 1, MAX_SERVINGS),
         prepTimeMin: prepTime,
         cookTimeMin: cookTime,
         totalTimeMin: prepTime + cookTime,
-        ingredients: ingredients.map((line) => line.trim()).filter(Boolean),
-        instructions: instructions.map((line) => line.trim()).filter(Boolean),
+        ingredients: ingredients
+          .slice(0, MAX_LINES)
+          .map((line) => line.trim().slice(0, MAX_LINE_LENGTH))
+          .filter(Boolean),
+        instructions: instructions
+          .slice(0, MAX_LINES)
+          .map((line) => line.trim().slice(0, MAX_LINE_LENGTH))
+          .filter(Boolean),
         imageUrl: imageUrl || undefined,
-        warningNote: warningNote.trim() || undefined,
+        warningNote:
+          warningNote.trim().slice(0, MAX_WARNING_LENGTH) || undefined,
         inMyBox: true,
       });
     } catch (error) {
@@ -163,6 +181,7 @@ export const UploadView: React.FC<Props> = ({
           Recipe name
           <input
             required
+            maxLength={MAX_TITLE_LENGTH}
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Sunday morning pancakes"
@@ -190,6 +209,7 @@ export const UploadView: React.FC<Props> = ({
               required
               type="number"
               min="1"
+              max={MAX_SERVINGS}
               value={servings}
               onChange={(event) =>
                 setServings(
@@ -204,6 +224,7 @@ export const UploadView: React.FC<Props> = ({
               required
               type="number"
               min="0"
+              max={MAX_MINUTES}
               value={prep}
               onChange={(event) =>
                 setPrep(event.target.value ? Number(event.target.value) : "")
@@ -216,6 +237,7 @@ export const UploadView: React.FC<Props> = ({
               required
               type="number"
               min="1"
+              max={MAX_MINUTES}
               value={cook}
               onChange={(event) =>
                 setCook(event.target.value ? Number(event.target.value) : "")
@@ -271,6 +293,7 @@ export const UploadView: React.FC<Props> = ({
         <label className="warning-input">
           <span>Optional note for cooks</span>
           <textarea
+            maxLength={MAX_WARNING_LENGTH}
             value={warningNote}
             onChange={(event) => setWarningNote(event.target.value)}
             placeholder="A useful warning, substitution, or bit of hard-earned advice"
@@ -313,11 +336,22 @@ function LineEditor({
   add: (setter: React.Dispatch<React.SetStateAction<string[]>>) => void;
   placeholder: string;
 }) {
+  const atLineLimit = lines.length >= MAX_LINES;
   return (
     <section className="line-editor">
       <div className="editor-heading">
-        <h2>{label}</h2>
-        <button type="button" onClick={() => add(setter)}>
+        <h2>
+          {label}{" "}
+          <span className="line-count">
+            ({lines.length}/{MAX_LINES})
+          </span>
+        </h2>
+        <button
+          type="button"
+          onClick={() => add(setter)}
+          disabled={atLineLimit}
+          title={atLineLimit ? `Limit of ${MAX_LINES} lines reached` : undefined}
+        >
           <Plus /> Add line
         </button>
       </div>
@@ -326,6 +360,7 @@ function LineEditor({
           <span>{index + 1}</span>
           <input
             required={index === 0}
+            maxLength={MAX_LINE_LENGTH}
             value={line}
             onChange={(event) => update(setter, index, event.target.value)}
             placeholder={placeholder}
