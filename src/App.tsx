@@ -77,12 +77,14 @@ export default function App() {
         setUserHandle(user.displayName);
         setIsLoggedIn(true);
         setIsEmailVerified(user.emailVerified);
+        setUserEmail(user.email);
         localStorage.setItem("cardbox_user", user.displayName);
       })
       .catch((error) => {
         console.error("Failed to validate API session", error);
         setAuthToken(null);
         setIsLoggedIn(false);
+        setUserEmail(null);
         localStorage.removeItem("cardbox_token");
         localStorage.removeItem("cardbox_auth");
       });
@@ -121,6 +123,7 @@ export default function App() {
     return Boolean(localStorage.getItem("cardbox_token"));
   });
   const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // Every place the login modal opens funnels through here so we know what
   // drove someone to it — a deliberate click vs. hitting a gated action.
@@ -295,6 +298,7 @@ export default function App() {
     setUserHandle(session.displayName);
     setIsLoggedIn(true);
     setIsEmailVerified(session.emailVerified);
+    setUserEmail(session.email);
     localStorage.setItem("cardbox_token", session.token);
     localStorage.setItem("cardbox_user", session.displayName);
     localStorage.setItem("cardbox_auth", "true");
@@ -304,6 +308,7 @@ export default function App() {
     setUserHandle("Guest chef");
     setIsLoggedIn(false);
     setIsEmailVerified(false);
+    setUserEmail(null);
     setAuthToken(null);
     if (recipeRoute) {
       window.history.replaceState({}, "", HOME_PATH);
@@ -335,6 +340,7 @@ export default function App() {
     if (!authToken) return;
     const user = await updateAccount(authToken, updates);
     setUserHandle(user.displayName);
+    setUserEmail(user.email);
     localStorage.setItem("cardbox_user", user.displayName);
   };
 
@@ -461,7 +467,11 @@ export default function App() {
         />
       )}
 
-      <FeedbackWidget theme={theme} authToken={authToken} />
+      <FeedbackWidget
+        theme={theme}
+        authToken={authToken}
+        userEmail={isLoggedIn ? userEmail : null}
+      />
     </div>
   );
 }

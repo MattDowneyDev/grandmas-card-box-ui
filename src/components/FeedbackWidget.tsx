@@ -7,6 +7,7 @@ import { sendFeedback } from "../api/feedback";
 interface Props {
   theme: ThemeMode;
   authToken: string | null;
+  userEmail: string | null;
 }
 
 type FeedbackType = "comment" | "bug" | "feature";
@@ -21,12 +22,13 @@ const MAX_MESSAGE_LENGTH = 2000;
 
 type Status = "idle" | "submitting" | "success" | "error";
 
-export const FeedbackWidget: React.FC<Props> = ({ theme, authToken }) => {
+export const FeedbackWidget: React.FC<Props> = ({ theme, authToken, userEmail }) => {
   const isDark = theme === "dark";
   const [isOpen, setIsOpen] = useState(false);
   const [type, setType] = useState<FeedbackType>("comment");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
+  const [includeAccountEmail, setIncludeAccountEmail] = useState(true);
   const [company, setCompany] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -35,6 +37,7 @@ export const FeedbackWidget: React.FC<Props> = ({ theme, authToken }) => {
     setType("comment");
     setMessage("");
     setEmail("");
+    setIncludeAccountEmail(true);
     setCompany("");
     setStatus("idle");
     setErrorMessage("");
@@ -46,11 +49,17 @@ export const FeedbackWidget: React.FC<Props> = ({ theme, authToken }) => {
     event.preventDefault();
     if (!message.trim() || status === "submitting") return;
 
+    const emailToSend = userEmail
+      ? includeAccountEmail
+        ? userEmail
+        : undefined
+      : email.trim() || undefined;
+
     setStatus("submitting");
     setErrorMessage("");
     try {
       await sendFeedback(
-        { type, message: message.trim(), email: email.trim() || undefined, company },
+        { type, message: message.trim(), email: emailToSend, company },
         authToken || undefined,
       );
       setStatus("success");
@@ -150,20 +159,33 @@ export const FeedbackWidget: React.FC<Props> = ({ theme, authToken }) => {
                   />
                 </div>
 
-                <div className="auth-field">
-                  <label>
-                    Email{" "}
-                    <span className="opacity-60 font-normal">
-                      (optional, if you&apos;d like a reply)
-                    </span>
+                {userEmail ? (
+                  <label className="flex items-center gap-2 text-sm mb-5">
+                    <input
+                      type="checkbox"
+                      checked={includeAccountEmail}
+                      onChange={(event) =>
+                        setIncludeAccountEmail(event.target.checked)
+                      }
+                    />
+                    Include my email ({userEmail}) so you can reply
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(event) => setEmail(event.target.value)}
-                    placeholder="you@example.com"
-                  />
-                </div>
+                ) : (
+                  <div className="auth-field">
+                    <label>
+                      Email{" "}
+                      <span className="opacity-60 font-normal">
+                        (optional, if you&apos;d like a reply)
+                      </span>
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                )}
 
                 {/* Honeypot: hidden from real users, so anything that fills it
                     in is almost certainly a bot. The backend accepts the
