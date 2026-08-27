@@ -257,6 +257,8 @@ button {
 .modern-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; border: 0; border-radius: 999px; background: #6f3f27; color: white; padding: 13px 20px; font-size: .8rem; font-weight: 700; }
 .modern-button svg { width: 16px; height: 16px; }
 .modern-button.secondary { border: 1px solid #d5c3ad; background: transparent; color: #6f3f27; }
+.dark .modern-button.secondary { border-color: #5f503b; color: #f5cc75; }
+.dark .modern-button.secondary:hover { background: rgba(245, 204, 117, .08); }
 .account-edit-form { display: grid; gap: 16px; border-top: 1px solid #eadfce; padding-top: 18px; }
 .account-edit-form label { display: grid; gap: 7px; color: #766957; font-size: .72rem; font-weight: 700; }
 .account-edit-form input { width: 100%; border: 1px solid #e4d5c1; border-radius: 12px; background: #fffaf2; color: #332c24; padding: 11px 12px; outline: none; }
@@ -269,6 +271,7 @@ button {
 .dark .account-edit-form input:focus { border-color: #f5cc75; outline-color: rgba(245, 204, 117, .14); }
 .modern-notice { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; border-radius: 14px; background: #e4efd8; color: #3e6935; padding: 14px 16px; font-size: .85rem; }
 .modern-notice svg { width: 18px; height: 18px; flex: 0 0 auto; }
+.dark .modern-notice { background: #2f3d28; color: #b7d9a0; }
 .modern-notice-error { border: 1px solid #e8b9a8; background: #fff0eb; color: #a84b2a; }
 .dark .modern-notice-error { border-color: #8a5140; background: #4a3028; color: #f2b09a; }
 .modern-form { display: grid; gap: 28px; }
@@ -426,8 +429,7 @@ button {
   }
 }
 
-#recipe-index-card-modal,
-#auth-modal {
+#recipe-index-card-modal {
   border: 1px solid #eadfce;
   border-radius: 28px;
   box-shadow: 0 24px 70px rgba(45, 31, 22, .22);
@@ -435,75 +437,114 @@ button {
   color: #332c24;
 }
 
-#recipe-index-card-modal h2,
-#auth-modal h2 {
+#recipe-index-card-modal h2 {
   color: #6f3f27;
   letter-spacing: -.04em;
 }
 
-.auth-modal-icon {
-  display: grid;
-  width: 40px;
-  height: 40px;
-  place-items: center;
-  border-radius: 14px;
-  background: #f0e2ce;
-  color: #a84b2a;
-}
-
-#auth-modal > div:first-child button {
-  border: 0;
-  color: #766957;
-  background: transparent;
-}
-
-#auth-modal label {
-  color: #766957;
-  font-size: .76rem;
-  letter-spacing: .03em;
-}
-
-#auth-modal input {
-  border: 1px solid #e4d5c1;
-  border-radius: 12px;
-  background: #fffaf2;
-  color: #332c24;
-  padding: 12px;
-}
-
-#auth-modal input:focus {
-  border-color: #a84b2a;
-  outline: 3px solid rgba(168, 75, 42, .12);
-}
-
-.dark #auth-modal input {
-  border-color: #5f503b;
-  background: #302a24;
-  color: #f7f1e7;
-}
-
-.dark #auth-modal input:focus {
-  border-color: #f5cc75;
-  outline-color: rgba(245, 204, 117, .14);
-}
-
-#recipe-index-card-modal button,
-#auth-modal button {
+#recipe-index-card-modal button {
   border-radius: 999px;
   transition: background-color 160ms ease, color 160ms ease, transform 160ms ease;
 }
 
 #recipe-index-card-modal input,
-#recipe-index-card-modal button,
-#auth-modal input,
-#auth-modal button {
+#recipe-index-card-modal button {
   border-color: #eadfce;
 }
 
-#recipe-index-card-modal > div:first-child,
-#auth-modal > div:first-child {
+#recipe-index-card-modal > div:first-child {
   border-color: #eadfce;
 }
+
+/* Auth / account modal */
+#auth-modal {
+  width: 100%;
+  max-width: 440px;
+  padding: 32px;
+  border: 1px solid #eadfce;
+  border-radius: 28px;
+  background: #fffaf2;
+  color: #332c24;
+  box-shadow: 0 24px 70px rgba(45, 31, 22, .22);
+  animation: authModalIn 180ms ease;
+}
+
+.dark #auth-modal {
+  border-color: #5f503b;
+  background: #3b332b;
+  color: #f7f1e7;
+}
+
+@keyframes authModalIn {
+  from { opacity: 0; transform: translateY(8px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+
+#auth-modal button { border-radius: 999px; }
+
+.auth-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid #eadfce; }
+.dark .auth-modal-head { border-color: #5f503b; }
+.auth-modal-head h2 { font-size: 1.35rem; font-weight: 800; letter-spacing: -.03em; color: #6f3f27; }
+.dark .auth-modal-head h2 { color: #f5cc75; }
+
+.auth-modal-icon { display: grid; width: 44px; height: 44px; place-items: center; border-radius: 14px; background: #f0e2ce; color: #a84b2a; flex: 0 0 auto; }
+.dark .auth-modal-icon { background: #5a4631; color: #f5cc75; }
+
+.auth-modal-close { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid #eadfce; border-radius: 999px; color: #766957; background: transparent; flex: 0 0 auto; }
+.auth-modal-close:hover { border-color: #d5c3ad; color: #6f3f27; background: #f5eadb; }
+.dark .auth-modal-close { border-color: #5f503b; color: #cfc3ad; }
+.dark .auth-modal-close:hover { background: #4a3e31; color: #f7f1e7; }
+
+.auth-tabs { display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #efe6d6; margin-bottom: 22px; }
+.dark .auth-tabs { background: #302a24; }
+.auth-tabs button { flex: 1; border: 0; border-radius: 10px; padding: 9px; background: transparent; color: #766957; font-size: .82rem; font-weight: 700; }
+.auth-tabs button.active { background: #fffaf2; color: #6f3f27; box-shadow: 0 2px 8px rgba(87, 58, 35, .12); }
+.dark .auth-tabs button { color: #cfc3ad; }
+.dark .auth-tabs button.active { background: #4a3e31; color: #f5cc75; }
+
+.auth-field { display: grid; gap: 6px; margin-bottom: 16px; }
+.auth-field label { font-size: .76rem; font-weight: 700; color: #766957; letter-spacing: .02em; }
+.auth-field input { width: 100%; border: 1px solid #e4d5c1; border-radius: 12px; background: #fffaf2; color: #332c24; padding: 12px 14px; font-size: .9rem; outline: none; }
+.auth-field input:focus { border-color: #a84b2a; outline: 3px solid rgba(168, 75, 42, .12); }
+.dark .auth-field input { border-color: #5f503b; background: #302a24; color: #f7f1e7; }
+.dark .auth-field input:focus { border-color: #f5cc75; outline-color: rgba(245, 204, 117, .14); }
+
+.auth-helper-row { display: flex; justify-content: flex-end; margin: -8px 0 16px; min-height: 20px; }
+.auth-link { border: 0; background: transparent; padding: 0; color: #a84b2a; font-size: .8rem; font-weight: 700; }
+.auth-link:hover { text-decoration: underline; }
+.dark .auth-link { color: #e4bf67; }
+
+.auth-actions { display: flex; gap: 10px; padding-top: 8px; }
+.auth-actions .modern-button { flex: 1; }
+
+.account-avatar-row { display: flex; align-items: center; gap: 14px; padding: 16px; margin-bottom: 18px; border: 1px solid #eadfce; border-radius: 18px; background: #fdf6ea; }
+.dark .account-avatar-row { border-color: #5f503b; background: #302a24; }
+.account-avatar { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: #6f3f27; color: #fffaf2; font-weight: 800; font-size: 1.1rem; flex: 0 0 auto; }
+.dark .account-avatar { background: #f5cc75; color: #332c24; }
+.account-avatar-row .name { font-weight: 700; color: #332c24; font-size: .95rem; }
+.dark .account-avatar-row .name { color: #f7f1e7; }
+.account-status-pill { display: inline-flex; align-items: center; gap: 5px; margin-top: 3px; font-size: .7rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; }
+.account-status-pill.verified { color: #3e6935; }
+.account-status-pill.unverified { color: #a84b2a; }
+.dark .account-status-pill.verified { color: #8fbf7a; }
+.dark .account-status-pill.unverified { color: #f2b09a; }
+
+.account-alert { display: flex; gap: 10px; padding: 14px 16px; border-radius: 16px; border: 1px solid #e8c98f; background: #fdf3de; color: #8a6416; margin-bottom: 16px; }
+.account-alert svg { flex: 0 0 auto; width: 18px; height: 18px; margin-top: 1px; }
+.account-alert p { font-size: .82rem; line-height: 1.55; margin-bottom: 10px; }
+.dark .account-alert { border-color: #7a5a2c; background: #4a3e22; color: #f0cf8e; }
+
+.account-section-label { font-size: .7rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #b18d5c; margin-bottom: 10px; }
+
+.account-danger-zone { margin-top: 20px; margin-bottom: 20px; padding-top: 18px; border-top: 1px solid #eadfce; }
+.dark .account-danger-zone { border-color: #5f503b; }
+.account-danger-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.account-danger-actions .modern-button { flex: 1; min-width: 130px; }
+
+.modern-button.danger-outline { border: 1px solid #c65a3a; background: transparent; color: #a84b2a; }
+.modern-button.danger-outline:hover { background: rgba(168, 75, 42, .08); }
+.dark .modern-button.danger-outline { border-color: #8a5140; color: #f2b09a; }
+.dark .modern-button.danger-outline:hover { background: rgba(242, 176, 154, .1); }
 
 #btn-close-recipe-modal {
   border: 1px solid #6f3f27 !important;

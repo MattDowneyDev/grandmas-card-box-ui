@@ -4,7 +4,7 @@
  */
 
 import React, { useRef, useState, useEffect } from "react";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics, track } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
 import {
@@ -45,6 +45,20 @@ const getTabFromPath = (): "my-box" | "search" | "upload" => {
   if (window.location.pathname === ROUTE_PATHS["my-box"]) return "my-box";
   return "search";
 };
+
+// Recipes get their own shareable, analytics-visible route (/recipes/:id)
+// instead of living only in component state.
+const RECIPE_ROUTE_PREFIX = "/recipes/";
+
+const getRecipeIdFromPath = (): string | null => {
+  const { pathname } = window.location;
+  if (!pathname.startsWith(RECIPE_ROUTE_PREFIX)) return null;
+  const id = pathname.slice(RECIPE_ROUTE_PREFIX.length);
+  return id ? decodeURIComponent(id) : null;
+};
+
+const getRecipePath = (recipeId: string) =>
+  `${RECIPE_ROUTE_PREFIX}${encodeURIComponent(recipeId)}`;
 
 export default function App() {
   // Recipes are always server-backed; loaded below once the component mounts.
@@ -107,15 +121,24 @@ export default function App() {
   });
   const [isEmailVerified, setIsEmailVerified] = useState<boolean>(false);
 
+  // Every place the login modal opens funnels through here so we know what
+  // drove someone to it — a deliberate click vs. hitting a gated action.
+  const openLogin = (reason: string) => {
+    track("login_modal_open", { reason });
+    setIsLoginOpen(true);
+  };
+
   const handleTabChange = (tab: NavigationTab) => {
     const requiresLogin = tab === "my-box" || tab === "upload";
     if (requiresLogin && (!isLoggedIn || !authToken || !isEmailVerified)) {
-      setIsLoginOpen(true);
+      openLogin(tab === "my-box" ? "my_box_gate" : "upload_gate");
       return;
     }
 
     if (tab === "my-box" || tab === "upload") {
       window.history.pushState({}, "", ROUTE_PATHS[tab]);
+    } else {
+      window.history.pushState({}, "", HOME_PATH);
     }
     setActiveTab(tab);
   };
@@ -125,47 +148,73 @@ export default function App() {
     if (requiresLogin && (!isLoggedIn || !authToken || !isEmailVerified)) {
       window.history.replaceState({}, "", HOME_PATH);
       setActiveTab("search");
-      setIsLoginOpen(true);
+      openLogin(activeTab === "my-box" ? "my_box_gate" : "upload_gate");
     }
   }, [activeTab, authToken, isLoggedIn, isEmailVerified]);
 
-  // Currently inspected recipe for detail modal
-  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
+  // Currently inspected recipe for detail modal, tracked as a real route
+  // (/recipes/:id) so it's shareable and shows up as its own pageview.
+  // `viaDirectLink` distinguishes "landed here from an external link" (no
+  // in-app history to go back to) from "opened by clicking a card in-app"
+  // (where the back button should just pop the entry we pushed).
+  const [recipeRoute, setRecipeRoute] = useState<{
+    id: string;
+    viaDirectLink: boolean;
+  } | null>(() => {
+    const id = getRecipeIdFromPath();
+    return id ? { id, viaDirectLink: true } : null;
+  });
   const recipeScrollPosition = useRef(0);
 
   const openRecipe = (recipe: Recipe) => {
     recipeScrollPosition.current = window.scrollY;
-    setSelectedRecipe(recipe);
+    window.history.pushState({}, "", getRecipePath(recipe.id));
+    setRecipeRoute({ id: recipe.id, viaDirectLink: false });
   };
 
   const closeRecipe = () => {
-    setSelectedRecipe(null);
-    window.requestAnimationFrame(() => {
-      window.scrollTo({ top: recipeScrollPosition.current, behavior: "auto" });
-    });
+    if (recipeRoute?.viaDirectLink) {
+      // Nothing to go "back" to in-app — land on the recipe grid instead of
+      // sending the visitor back out to wherever referred them here.
+      window.history.replaceState({}, "", HOME_PATH);
+      setRecipeRoute(null);
+      setActiveTab("search");
+      window.requestAnimationFrame(() => {
+        window.scrollTo({ top: recipeScrollPosition.current, behavior: "auto" });
+      });
+    } else {
+      window.history.back();
+    }
   };
 
   useEffect(() => {
     const handlePopState = () => {
-      if (selectedRecipe) {
-        setSelectedRecipe(null);
-        window.history.replaceState({}, "", HOME_PATH);
-        setActiveTab("search");
-        window.requestAnimationFrame(() => {
-          window.scrollTo({
-            top: recipeScrollPosition.current,
-            behavior: "auto",
+      const id = getRecipeIdFromPath();
+      setRecipeRoute((prev) => {
+        const next = id ? { id, viaDirectLink: false } : null;
+        if (prev && !next) {
+          window.requestAnimationFrame(() => {
+            window.scrollTo({
+              top: recipeScrollPosition.current,
+              behavior: "auto",
+            });
           });
-        });
-        return;
-      }
+        }
+        return next;
+      });
 
-      setActiveTab(getTabFromPath());
+      if (!id) {
+        setActiveTab(getTabFromPath());
+      }
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
-  }, [selectedRecipe]);
+  }, []);
+
+  const selectedRecipe = recipeRoute
+    ? (recipes.find((recipe) => recipe.id === recipeRoute.id) ?? null)
+    : null;
 
   // Persist theme & toggle dark class on document element
   useEffect(() => {
@@ -191,7 +240,7 @@ export default function App() {
   // Toggle recipe bookmark in My Box
   const handleToggleMyBox = (recipeId: string) => {
     if (!isLoggedIn || !authToken || !isEmailVerified) {
-      setIsLoginOpen(true);
+      openLogin("favorite_gate");
       return;
     }
 
@@ -206,11 +255,6 @@ export default function App() {
             item.id === recipeId ? { ...item, inMyBox: nextInMyBox } : item,
           ),
         );
-        setSelectedRecipe((current) =>
-          current?.id === recipeId
-            ? { ...current, inMyBox: nextInMyBox }
-            : current,
-        );
       })
       .catch((error) =>
         console.error("Failed to update recipe favorite", error),
@@ -222,7 +266,7 @@ export default function App() {
     newRecipeData: Omit<Recipe, "id" | "createdAt" | "isUserUpload">,
   ) => {
     if (!isLoggedIn || !authToken || !isEmailVerified) {
-      setIsLoginOpen(true);
+      openLogin("upload_gate");
       return;
     }
     const newRecipe = await createRecipe(newRecipeData, authToken || undefined);
@@ -237,8 +281,9 @@ export default function App() {
     deleteRecipe(recipeId, authToken)
       .then(() => {
         setRecipes((prev) => prev.filter((recipe) => recipe.id !== recipeId));
-        if (selectedRecipe?.id === recipeId) {
-          setSelectedRecipe(null);
+        if (recipeRoute?.id === recipeId) {
+          window.history.replaceState({}, "", HOME_PATH);
+          setRecipeRoute(null);
         }
       })
       .catch((error) => console.error("Failed to delete recipe", error));
@@ -259,7 +304,10 @@ export default function App() {
     setIsLoggedIn(false);
     setIsEmailVerified(false);
     setAuthToken(null);
-    setSelectedRecipe(null);
+    if (recipeRoute) {
+      window.history.replaceState({}, "", HOME_PATH);
+      setRecipeRoute(null);
+    }
     localStorage.removeItem("cardbox_token");
     localStorage.removeItem("cardbox_auth");
   };
@@ -303,7 +351,7 @@ export default function App() {
         onBackToLogin={() => {
           window.history.replaceState({}, "", HOME_PATH);
           setActiveTab("search");
-          setIsLoginOpen(true);
+          openLogin("password_reset_back");
         }}
       />
     );
@@ -317,7 +365,7 @@ export default function App() {
         onBackToLogin={() => {
           window.history.replaceState({}, "", HOME_PATH);
           setActiveTab("search");
-          setIsLoginOpen(true);
+          openLogin("verify_email_back");
         }}
       />
     );
@@ -342,7 +390,7 @@ export default function App() {
         toggleTheme={toggleTheme}
         isLoggedIn={isLoggedIn}
         userHandle={userHandle}
-        onOpenLogin={() => setIsLoginOpen(true)}
+        onOpenLogin={() => openLogin("header_button")}
       />
 
       {/* Main Content Area (Offset by desktop sidebar md:ml-64) */}
