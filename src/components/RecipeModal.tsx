@@ -306,7 +306,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            {recipe.isUserUpload && onDeleteRecipe && (
+            {recipe.isOwnRecipe && onDeleteRecipe && (
               <button
                 onClick={() => {
                   if (confirm("Delete this recipe data permanently?")) {

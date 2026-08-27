@@ -13,6 +13,7 @@ export interface Recipe {
   createdByDisplayName?: string;
   favoriteCount?: number;
   isUserUpload: boolean;
+  isOwnRecipe?: boolean;
   inMyBox: boolean;
   servings: number;
   difficulty?: 'trivial' | 'medium' | 'high';

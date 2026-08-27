@@ -7,7 +7,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { Recipe, NavigationTab, ThemeMode } from "./types";
-import { INITIAL_RECIPES } from "./data/initialRecipes";
 import {
   AuthSession,
   deleteAccount,
@@ -48,18 +47,8 @@ const getTabFromPath = (): "my-box" | "search" | "upload" => {
 };
 
 export default function App() {
-  // Load recipes from localStorage or fallback to INITIAL_RECIPES
-  const [recipes, setRecipes] = useState<Recipe[]>(() => {
-    try {
-      const saved = localStorage.getItem("cardbox_recipes");
-      if (saved) {
-        return JSON.parse(saved);
-      }
-    } catch (e) {
-      console.error("Failed to parse local storage recipes", e);
-    }
-    return INITIAL_RECIPES;
-  });
+  // Recipes are always server-backed; loaded below once the component mounts.
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
   const [authToken, setAuthToken] = useState<string | null>(() =>
     localStorage.getItem("cardbox_token"),
@@ -177,14 +166,6 @@ export default function App() {
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, [selectedRecipe]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem("cardbox_recipes", JSON.stringify(recipes));
-    } catch (e) {
-      console.error("Failed to save recipes to localStorage", e);
-    }
-  }, [recipes]);
 
   // Persist theme & toggle dark class on document element
   useEffect(() => {
@@ -309,7 +290,7 @@ export default function App() {
   };
 
   const myBoxRecipes = recipes.filter(
-    (recipe) => recipe.isUserUpload || recipe.inMyBox,
+    (recipe) => recipe.isOwnRecipe || recipe.inMyBox,
   );
   const myBoxCount = myBoxRecipes.length;
   const queryToken = new URLSearchParams(window.location.search).get("token");

@@ -16,6 +16,7 @@ interface ApiRecipe {
   createdAt: string;
   favoriteCount?: number;
   isUserUpload: boolean;
+  isOwnRecipe?: boolean;
   inMyBox: boolean;
   servings: number;
   difficulty?: "trivial" | "medium" | "high";

@@ -24,7 +24,7 @@ export const CardBoxView: React.FC<Props> = ({
   const filtered = recipes.filter(
     (recipe) =>
       filter === "ALL" ||
-      (filter === "MY_UPLOADS" && recipe.isUserUpload) ||
+      (filter === "MY_UPLOADS" && recipe.isOwnRecipe) ||
       (filter === "QUICK_FIXES" &&
         (recipe.ingredients.length <= 4 || recipe.cookTimeMin <= 15)) ||
       (filter === "SAVED" && recipe.inMyBox),
@@ -60,7 +60,7 @@ export const CardBoxView: React.FC<Props> = ({
               {id === "SAVED"
                 ? recipes.filter((recipe) => recipe.inMyBox).length
                 : id === "MY_UPLOADS"
-                  ? recipes.filter((recipe) => recipe.isUserUpload).length
+                  ? recipes.filter((recipe) => recipe.isOwnRecipe).length
                   : id === "ALL"
                     ? recipes.length
                     : filtered.length}
