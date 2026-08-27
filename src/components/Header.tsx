@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { LogIn, Menu, Moon, Sun, X } from "lucide-react";
 import { NavigationTab, ThemeMode } from "../types";
 
@@ -25,6 +25,27 @@ export const Header: React.FC<Props> = ({
 }) => {
   const dark = theme === "dark";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuToggleRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        menuToggleRef.current?.contains(target) ||
+        mobileMenuRef.current?.contains(target)
+      ) {
+        return;
+      }
+      setIsMobileMenuOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobileMenuOpen]);
+
   const items = [
     { id: "search" as const, label: "Explore" },
     { id: "my-box" as const, label: "My card box" },
@@ -60,6 +81,7 @@ export const Header: React.FC<Props> = ({
           <span>{isLoggedIn ? userHandle : "Sign in"}</span>
         </button>
         <button
+          ref={menuToggleRef}
           className="site-header-menu-toggle"
           onClick={() => setIsMobileMenuOpen((open) => !open)}
           aria-expanded={isMobileMenuOpen}
@@ -71,7 +93,7 @@ export const Header: React.FC<Props> = ({
         </button>
       </div>
       {isMobileMenuOpen && (
-        <div className="site-header-mobile-menu">
+        <div className="site-header-mobile-menu" ref={mobileMenuRef}>
           {items.map(({ id, label }) => (
             <button
               key={id}
