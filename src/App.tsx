@@ -31,8 +31,10 @@ import { RecipeModal } from "./components/RecipeModal";
 import { LoginModal } from "./components/LoginModal";
 import { PasswordResetView } from "./components/PasswordResetView";
 import { VerifyEmailView } from "./components/VerifyEmailView";
+import { PrivacyView } from "./components/PrivacyView";
 import { Footer } from "./components/Footer";
 import { FeedbackWidget } from "./components/FeedbackWidget";
+import { CookieConsentBanner } from "./components/CookieConsentBanner";
 
 const HOME_PATH = "/";
 
@@ -111,6 +113,15 @@ export default function App() {
 
   // Active navigation tab
   const [activeTab, setActiveTab] = useState<NavigationTab>(getTabFromPath);
+
+  // Whether the standalone /privacy view is showing. Tracked as its own
+  // state (rather than reading window.location.pathname directly at render
+  // time) so leaving the page reliably triggers a re-render -- activeTab is
+  // already "search" for this route, so setActiveTab("search") alone is a
+  // no-op and wouldn't cause React to re-check the pathname.
+  const [isPrivacyRoute, setIsPrivacyRoute] = useState(
+    () => window.location.pathname === "/privacy",
+  );
 
   // Modals
   const [isLoginOpen, setIsLoginOpen] = useState(false);
@@ -352,29 +363,51 @@ export default function App() {
 
   if (window.location.pathname === "/reset-password") {
     return (
-      <PasswordResetView
-        theme={theme}
-        token={queryToken || ""}
-        onBackToLogin={() => {
-          window.history.replaceState({}, "", HOME_PATH);
-          setActiveTab("search");
-          openLogin("password_reset_back");
-        }}
-      />
+      <>
+        <PasswordResetView
+          theme={theme}
+          token={queryToken || ""}
+          onBackToLogin={() => {
+            window.history.replaceState({}, "", HOME_PATH);
+            setActiveTab("search");
+            openLogin("password_reset_back");
+          }}
+        />
+        <CookieConsentBanner theme={theme} />
+      </>
     );
   }
 
   if (window.location.pathname === "/verify-email") {
     return (
-      <VerifyEmailView
-        theme={theme}
-        token={queryToken || ""}
-        onBackToLogin={() => {
-          window.history.replaceState({}, "", HOME_PATH);
-          setActiveTab("search");
-          openLogin("verify_email_back");
-        }}
-      />
+      <>
+        <VerifyEmailView
+          theme={theme}
+          token={queryToken || ""}
+          onBackToLogin={() => {
+            window.history.replaceState({}, "", HOME_PATH);
+            setActiveTab("search");
+            openLogin("verify_email_back");
+          }}
+        />
+        <CookieConsentBanner theme={theme} />
+      </>
+    );
+  }
+
+  if (isPrivacyRoute) {
+    return (
+      <>
+        <PrivacyView
+          theme={theme}
+          onBackToHome={() => {
+            window.history.replaceState({}, "", HOME_PATH);
+            setActiveTab("search");
+            setIsPrivacyRoute(false);
+          }}
+        />
+        <CookieConsentBanner theme={theme} />
+      </>
     );
   }
 
@@ -472,6 +505,8 @@ export default function App() {
         authToken={authToken}
         userEmail={isLoggedIn ? userEmail : null}
       />
+
+      <CookieConsentBanner theme={theme} />
     </div>
   );
 }

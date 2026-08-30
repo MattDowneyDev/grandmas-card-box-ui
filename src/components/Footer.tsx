@@ -1,5 +1,6 @@
 import React from "react";
 import { ThemeMode } from "../types";
+import { OPEN_COOKIE_PREFERENCES_EVENT } from "../lib/consent";
 
 interface FooterProps {
   theme: ThemeMode;
@@ -29,6 +30,22 @@ export const Footer: React.FC<FooterProps> = ({ theme }) => {
       >
         Designed and developed by MD Dev
       </a>
+
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider">
+        <a href="/privacy" className="underline hover:text-[#ba1a1a]">
+          Privacy policy
+        </a>
+        <span aria-hidden="true">·</span>
+        <button
+          type="button"
+          onClick={() =>
+            window.dispatchEvent(new Event(OPEN_COOKIE_PREFERENCES_EVENT))
+          }
+          className="underline hover:text-[#ba1a1a]"
+        >
+          Cookie preferences
+        </button>
+      </div>
     </footer>
   );
 };
