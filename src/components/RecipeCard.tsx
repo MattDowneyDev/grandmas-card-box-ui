@@ -1,6 +1,7 @@
 import React from "react";
 import { Recipe, ThemeMode } from "../types";
 import { Bookmark, BookmarkCheck, Clock, Utensils } from "lucide-react";
+import { titleCaseIfShouting } from "../lib/textCase";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -21,6 +22,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
 }) => {
   const isDark = theme === "dark";
   const isSaved = recipe.inMyBox;
+  const displayTitle = titleCaseIfShouting(recipe.title);
 
   return (
     <div
@@ -39,7 +41,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
               isDark ? "text-[#3b82f6]" : "text-[#001255]"
             }`}
           >
-            {recipe.title}
+            {displayTitle}
           </h3>
 
           <div className="flex items-center gap-1 shrink-0">
@@ -73,7 +75,7 @@ export const RecipeCard: React.FC<RecipeCardProps> = ({
           <div className="mb-4 overflow-hidden border border-current/20 bg-black/10 aspect-video relative">
             <img
               src={recipe.imageUrl}
-              alt={recipe.title}
+              alt={displayTitle}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />

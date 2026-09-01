@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Recipe, ThemeMode } from "../types";
+import { titleCaseIfShouting } from "../lib/textCase";
 import {
   X,
   Clock,
@@ -31,6 +32,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
   if (!recipe) return null;
 
   const isDark = theme === "dark";
+  const displayTitle = titleCaseIfShouting(recipe.title);
 
   const [checkedIngredients, setCheckedIngredients] = useState<
     Record<number, boolean>
@@ -161,11 +163,11 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
         {/* Recipe Title & Image */}
         <div className="mb-6">
           <h2
-            className={`text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading uppercase tracking-tight mb-2 ${
+            className={`text-2xl sm:text-3xl md:text-4xl font-extrabold font-heading tracking-tight mb-2 ${
               isDark ? "text-[#3b82f6]" : "text-[#001255]"
             }`}
           >
-            {recipe.title}
+            {displayTitle}
           </h2>
 
           <div className="flex flex-wrap items-center gap-4 text-xs font-mono opacity-90">
@@ -190,7 +192,7 @@ export const RecipeModal: React.FC<RecipeModalProps> = ({
           <div className="mb-6 border border-current/30 overflow-hidden max-h-64 bg-black/10">
             <img
               src={recipe.imageUrl}
-              alt={recipe.title}
+              alt={displayTitle}
               className="w-full h-64 object-cover"
             />
           </div>

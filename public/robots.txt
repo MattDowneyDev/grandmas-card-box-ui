@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /my-box
+Disallow: /upload
+Disallow: /reset-password
+Disallow: /verify-email
+
+Sitemap: https://grandmascardbox.com/sitemap.xml

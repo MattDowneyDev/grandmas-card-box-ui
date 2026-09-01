@@ -18,7 +18,7 @@ export const Footer: React.FC<FooterProps> = ({ theme }) => {
           : "bg-[#efe6d6] border-[#6f3f27] text-[#332c24]"
       }`}
     >
-      <div className="font-mono text-xs font-bold tracking-widest text-[#a84b2a]">
+      <div className="text-xs font-bold tracking-widest text-[#a84b2a]">
         GRANDMA'S CARDBOX · {new Date().getFullYear()}
       </div>
 
@@ -26,12 +26,12 @@ export const Footer: React.FC<FooterProps> = ({ theme }) => {
         href="https://mattdowneydev.com"
         target="_blank"
         rel="noreferrer"
-        className="font-mono text-[11px] uppercase tracking-wider text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none"
+        className="text-[11px] uppercase tracking-wider text-[#5f5e5a] dark:text-[#9ca3af] hover:text-[#ba1a1a] dark:hover:text-red-400 transition-none"
       >
         Designed and developed by MD Dev
       </a>
 
-      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-wider">
+      <div className="flex items-center gap-2 text-[11px] uppercase tracking-wider">
         <a href="/privacy" className="underline hover:text-[#ba1a1a]">
           Privacy policy
         </a>

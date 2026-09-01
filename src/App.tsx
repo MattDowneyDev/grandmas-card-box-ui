@@ -35,6 +35,13 @@ import { PrivacyView } from "./components/PrivacyView";
 import { Footer } from "./components/Footer";
 import { FeedbackWidget } from "./components/FeedbackWidget";
 import { CookieConsentBanner } from "./components/CookieConsentBanner";
+import {
+  buildRecipeDescription,
+  buildRecipeJsonLd,
+  buildRecipeTitle,
+  SITE_NAME,
+  updateHead,
+} from "./lib/head";
 
 const HOME_PATH = "/";
 
@@ -230,6 +237,78 @@ export default function App() {
   const selectedRecipe = recipeRoute
     ? (recipes.find((recipe) => recipe.id === recipeRoute.id) ?? null)
     : null;
+
+  // Keeps <title>/meta description/canonical/OG/JSON-LD in sync with
+  // whatever's actually on screen, since this is a client-routed SPA with
+  // one static index.html. This covers browser tabs and any crawler that
+  // executes JS on a later pass; the edge middleware handles the
+  // non-JS-crawler case for individual recipe pages.
+  useEffect(() => {
+    const pathname = window.location.pathname;
+
+    if (pathname === "/reset-password") {
+      updateHead({
+        title: `Reset password — ${SITE_NAME}`,
+        path: pathname,
+        noindex: true,
+      });
+      return;
+    }
+
+    if (pathname === "/verify-email") {
+      updateHead({
+        title: `Verify email — ${SITE_NAME}`,
+        path: pathname,
+        noindex: true,
+      });
+      return;
+    }
+
+    if (isPrivacyRoute) {
+      updateHead({
+        title: `Privacy policy — ${SITE_NAME}`,
+        description:
+          "How Grandma's Card Box collects, uses, and protects your data.",
+        path: "/privacy",
+      });
+      return;
+    }
+
+    if (recipeRoute && selectedRecipe) {
+      updateHead({
+        title: `${buildRecipeTitle(selectedRecipe)} — ${SITE_NAME}`,
+        description: buildRecipeDescription(selectedRecipe),
+        path: getRecipePath(selectedRecipe.id),
+        image: selectedRecipe.imageUrl,
+        type: "article",
+        jsonLd: buildRecipeJsonLd(selectedRecipe),
+      });
+      return;
+    }
+
+    if (activeTab === "my-box") {
+      updateHead({
+        title: `My card box — ${SITE_NAME}`,
+        path: "/my-box",
+        noindex: true,
+      });
+      return;
+    }
+
+    if (activeTab === "upload") {
+      updateHead({
+        title: `Share a recipe — ${SITE_NAME}`,
+        path: "/upload",
+        noindex: true,
+      });
+      return;
+    }
+
+    updateHead({
+      title: `${SITE_NAME} — No backstories, just recipes.`,
+      path: "/",
+    });
+  }, [activeTab, isPrivacyRoute, recipeRoute, selectedRecipe]);
 
   // Persist theme & toggle dark class on document element
   useEffect(() => {
